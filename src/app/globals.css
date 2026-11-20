@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/* ---- Divine Sanskar Shibir palette (taken from the logo) ---- */
+@theme {
+  --color-cream: #fbf6ec;
+  --color-ivory: #fffcf5;
+  --color-sand: #f3e8d2;
+  --color-peach: #f6d7a7;
+
+  --color-gold-50: #fbf3df;
+  --color-gold-100: #f5e6bd;
+  --color-gold-300: #d4af61;
+  --color-gold-500: #b8862b;
+  --color-gold-600: #9c6f1e;
+  --color-gold-700: #7e5818;
+  --color-gold-900: #4a3310;
+
+  --color-lotus-50: #fdf1f3;
+  --color-lotus-200: #f6cdd4;
+  --color-lotus-400: #ec9fae;
+  --color-lotus-600: #d4708a;
+
+  --color-sage-50: #e9f5ed;
+  --color-sage-100: #cfe9d8;
+  --color-sage-500: #4e9f6b;
+  --color-sage-600: #3d8456;
+  --color-sage-700: #2f6b45;
+
+  --color-ink: #3b2a12;
+  --color-muted: #84735a;
+  --color-danger: #b4402f;
+
+  --font-sans: var(--font-body), var(--font-gujarati), system-ui, sans-serif;
+  --font-display: var(--font-display-en), var(--font-display-gu), Georgia, serif;
+
+  --shadow-soft: 0 1px 2px rgb(120 80 20 / 0.06), 0 6px 18px -6px rgb(120 80 20 / 0.18);
+  --shadow-glow: 0 0 0 3px rgb(78 159 107 / 0.18), 0 6px 16px -6px rgb(78 159 107 / 0.55);
+}
+
+:root { color-scheme: light; }
+
+html { -webkit-text-size-adjust: 100%; }
+html[lang="gu"] { --font-display: var(--font-display-gu), var(--font-display-en), serif; }
+
+body {
+  background:
+    radial-gradient(1200px 500px at 50% -10%, #f9e2b6 0%, rgb(249 226 182 / 0) 60%),
+    var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: 0.005em; }
+
+/* ---- Reusable pieces ---- */
+@layer components {
+  .card {
+    background: var(--color-ivory);
+    border: 1px solid var(--color-gold-100);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    min-height: 3rem; padding: .65rem 1.25rem; border-radius: .9rem; font-weight: 600;
+    transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease; cursor: pointer;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+  .btn-gold {
+    color: #fffaf0;
+    background: linear-gradient(180deg, #c99a3d 0%, #a97722 100%);
+    box-shadow: 0 2px 0 #7e5818, 0 8px 18px -8px rgb(126 88 24 / .7);
+  }
+  .btn-ghost { background: transparent; color: var(--color-gold-700); border: 1px solid var(--color-gold-300); }
+  .field {
+    width: 100%; min-height: 3rem; padding: .65rem .9rem; border-radius: .8rem;
+    background: #fff; border: 1.5px solid var(--color-gold-100); color: var(--color-ink);
+    outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .field:focus { border-color: var(--color-gold-500); box-shadow: 0 0 0 3px rgb(184 134 43 / .18); }
+  .field[aria-invalid="true"] { border-color: var(--color-danger); }
+  .label { display: block; margin-bottom: .3rem; font-size: .85rem; font-weight: 600; color: var(--color-gold-700); }
+  .hint { font-size: .78rem; color: var(--color-muted); margin-top: .25rem; }
+  .err { font-size: .8rem; color: var(--color-danger); margin-top: .25rem; }
+
+  /* thin gold divider with a small lotus-ish diamond in the middle */
+  .divider { display: flex; align-items: center; gap: .6rem; color: var(--color-gold-300); }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--color-gold-300), transparent); }
+}
+
+/* Gentle animations */
+@keyframes pop { 0% { transform: scale(.96); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
+.pop { animation: pop .28s ease-out; }
+@keyframes floatUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: floatUp .35s ease-out both; }
+@keyframes flame { 0%,100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.08) rotate(2deg); } }
+.flame { display: inline-block; animation: flame 1.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Safe areas for installed PWA on notched phones */
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+.safe-top { padding-top: env(safe-area-inset-top); }

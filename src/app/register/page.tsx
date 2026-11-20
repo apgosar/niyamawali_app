@@ -1,0 +1,44 @@
+import { redirect } from "next/navigation";
+import { getStudent } from "@/lib/auth";
+import { getT } from "@/lib/lang";
+import { query } from "@/lib/db";
+import { findReferrer, normalizeCode } from "@/lib/referrals";
+import { getSettings } from "@/lib/settings";
+import { BrandHeader } from "@/components/Brand";
+import { RegisterForm } from "./RegisterForm";
+
+export const metadata = { title: "Register" };
+
+async function suggestions(col: "sangh" | "residence" | "village") {
+  const rows = await query<{ v: string }>(
+    `select ${col} as v from students group by ${col} order by count(*) desc, ${col} limit 40`,
+  );
+  return rows.map((r) => r.v);
+}
+
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
+  if (await getStudent()) redirect("/");
+  const { t } = await getT();
+  const { ref } = await searchParams;
+  const code = normalizeCode(ref);
+  const [referrer, settings, sangh, residence, village] = await Promise.all([
+    code ? findReferrer(code) : null,
+    getSettings(),
+    suggestions("sangh"),
+    suggestions("residence"),
+    suggestions("village"),
+  ]);
+
+  return (
+    <main className="mx-auto max-w-md pb-16">
+      <BrandHeader title={t.register.title} subtitle={t.register.subtitle} />
+      <RegisterForm
+        refCode={referrer ? code : ""}
+        badRef={!!code && !referrer}
+        referrerName={referrer ? `${referrer.first_name} ${referrer.surname}` : null}
+        bonus={settings.referralBonus}
+        suggestions={{ sangh, residence, village }}
+      />
+    </main>
+  );
+}
