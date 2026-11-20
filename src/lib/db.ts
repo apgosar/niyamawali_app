@@ -55,8 +55,9 @@ async function createPglite(): Promise<Db> {
 
 async function createPostgres(url: string): Promise<Db> {
   const postgres = (await import("postgres")).default;
-  // prepare:false keeps us compatible with Supabase's transaction pooler.
-  const sql = postgres(url, { prepare: false, max: 3, idle_timeout: 20 });
+  // Supabase's transaction pooler needs prepare:false, and it hangs if several queries are pipelined down one
+  // connection at once (e.g. Promise.all) – so max_pipeline:1 = one in-flight query per connection.
+  const sql = postgres(url, { prepare: false, max: 3, max_pipeline: 1, idle_timeout: 20 });
   return {
     async query<T>(text: string, params: unknown[] = []) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
