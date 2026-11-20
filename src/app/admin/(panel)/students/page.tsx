@@ -81,7 +81,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
                 <td className="p-3">{r.village}</td>
                 <td className="p-3 tabular-nums">{r.father_phone || r.mother_phone || r.own_phone}</td>
                 <td className="p-3 text-right tabular-nums">{r.active_days}</td>
-                <td className="p-3 text-right font-display text-lg font-bold tabular-nums text-gold-900">{r.points}</td>
+                <td className="p-3 text-right num text-lg text-gold-900">{r.points}</td>
               </tr>
             ))}
             {rows.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-muted">No students match these filters.</td></tr>}

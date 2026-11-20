@@ -48,7 +48,7 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
         <div className="mt-4 grid grid-cols-3 gap-2 text-center">
           {[[t.progress.total, total], [t.progress.activeDays, active], [t.progress.best, best]].map(([label, val]) => (
             <div key={String(label)} className="card py-3">
-              <p className="font-display text-3xl font-bold leading-none text-gold-600">{val}</p>
+              <p className="num text-3xl leading-none text-gold-600">{val}</p>
               <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</p>
             </div>
           ))}
@@ -83,7 +83,7 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
               return (
                 <li key={row.month} className="flex items-center justify-between gap-2 py-2.5">
                   <Link href={`/progress?m=${row.month}`} replace className="flex-1 font-semibold">{monthLabel(row.month, lang)}</Link>
-                  <span className="font-display text-xl font-bold text-gold-900">{row.total}</span>
+                  <span className="num text-xl text-gold-900">{row.total}</span>
                   {closed ? (
                     <a href={`/certificate/${row.month}`} className="rounded-full border border-gold-300 px-3 py-1 text-xs font-semibold text-gold-700">🏅 {t.progress.certificate}</a>
                   ) : (

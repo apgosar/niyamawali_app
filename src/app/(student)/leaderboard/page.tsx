@@ -62,7 +62,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
                   <p className={`mt-1 line-clamp-2 text-xs font-semibold leading-tight ${r.id === student.id ? "text-sage-700" : ""}`}>{r.first_name} {r.surname}</p>
                   <div className={`mt-1 flex w-full flex-col items-center justify-start rounded-t-2xl border border-gold-300 bg-gradient-to-b from-gold-100 to-gold-50 pt-2 ${heights[r.rank] ?? "h-14"}`}>
                     <span className="text-xl">{MEDAL[r.rank - 1]}</span>
-                    <span className="font-display text-lg font-bold text-gold-900">{r.points}</span>
+                    <span className="num text-lg text-gold-900">{r.points}</span>
                   </div>
                 </li>
               ))}
@@ -73,13 +73,13 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
                 const mine = r.id === student.id;
                 return (
                   <li key={r.id} className={`flex items-center gap-3 rounded-2xl border p-2.5 ${mine ? "border-sage-500 bg-sage-50" : "border-gold-100 bg-ivory"}`}>
-                    <span className="w-8 text-center font-display text-lg font-bold text-gold-600">{r.rank}</span>
+                    <span className="w-8 text-center num text-lg text-gold-600">{r.rank}</span>
                     <Avatar photoKey={r.photo_key} name={`${r.first_name} ${r.surname}`} size={40} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-semibold">{r.first_name} {r.surname}</span>
                       <span className="block truncate text-xs text-muted">{r.sangh}</span>
                     </span>
-                    <span className="font-display text-xl font-bold text-gold-900">{r.points}</span>
+                    <span className="num text-xl text-gold-900">{r.points}</span>
                   </li>
                 );
               })}
@@ -94,8 +94,8 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
               <Avatar photoKey={student.photo_key} name={student.first_name} size={40} />
               {me ? (
                 <>
-                  <span className="flex-1 font-semibold text-sage-700">{t.board.yourRank}: <span className="font-display text-xl">#{me.rank}</span></span>
-                  <span className="font-display text-xl font-bold text-gold-900">{me.points} <span className="text-xs">{t.board.pointsSuffix}</span></span>
+                  <span className="flex-1 font-semibold text-sage-700">{t.board.yourRank}: <span className="num text-xl">#{me.rank}</span></span>
+                  <span className="num text-xl text-gold-900">{me.points} <span className="text-xs">{t.board.pointsSuffix}</span></span>
                 </>
               ) : (
                 <span className="flex-1 text-sm font-semibold text-sage-700">{t.board.notRanked}</span>

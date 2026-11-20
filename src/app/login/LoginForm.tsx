@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useI18n } from "@/components/I18nProvider";
 import { PinPad } from "@/components/PinPad";
 import { Avatar } from "@/components/Avatar";
@@ -9,10 +10,12 @@ interface Pick { id: string; name: string; photo: string }
 
 export function LoginForm() {
   const { t } = useI18n();
+  const router = useRouter();
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [pick, setPick] = useState<{ list: Pick[]; token: string } | null>(null);
 
   const phoneOk = /^(\+?91)?[6-9]\d{9}$/.test(phone.replace(/[\s-]/g, ""));
@@ -20,6 +23,7 @@ export function LoginForm() {
   async function submit(code: string) {
     if (!phoneOk) { setError(t.login.badPhone); setPin(""); return; }
     setBusy(true); setError(null);
+    let redirecting = false;
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, pin: code }),
@@ -27,11 +31,17 @@ export function LoginForm() {
       const data = await res.json();
       if (res.ok && data.ok) { window.location.assign("/"); return; }
       if (res.ok && data.pick) { setPick({ list: data.pick, token: data.token }); return; }
+      if (data.error === "notRegistered") {
+        setNotice(t.login.notRegistered);
+        setTimeout(() => router.push("/register"), 2500);
+        redirecting = true; // keep the keypad locked until we navigate
+        return;
+      }
       setError(data.error === "locked" ? t.login.locked : t.login.wrong);
       setPin("");
     } catch {
       setError(t.common.somethingWrong); setPin("");
-    } finally { setBusy(false); }
+    } finally { if (!redirecting) setBusy(false); }
   }
 
   async function choose(id: string) {
@@ -79,6 +89,7 @@ export function LoginForm() {
           onChange={(v) => { setPin(v); setError(null); if (v.length === 4) submit(v); }} />
 
         {error && <p role="alert" className="err mt-4 text-center">{error}</p>}
+        {notice && <p role="status" className="mt-4 rounded-xl bg-gold-50 p-3 text-center text-sm font-semibold text-gold-700">{notice}</p>}
       </div>
 
       <p className="mt-4 px-2 text-center text-sm text-muted">{t.login.forgot}</p>

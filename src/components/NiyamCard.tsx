@@ -77,7 +77,7 @@ export function NiyamCard({ niyam, options, value, onChange }: Props) {
         <div className="flex items-center gap-3">
           <button type="button" aria-label="−" className={`${btn} border-gold-300 text-gold-700`} disabled={value <= 0} onClick={dec}>−</button>
           <span aria-live="polite" className="min-w-14 text-center">
-            <span className="font-display text-3xl font-bold text-gold-900">{n(value)}</span>
+            <span className="num text-3xl text-gold-900">{n(value)}</span>
             <span className="block text-[11px] leading-none text-muted">{t.today.gathas}</span>
           </span>
           <button type="button" aria-label="+" className={`${btn} border-sage-500 bg-sage-500 text-white`} disabled={value >= niyam.max_count} onClick={inc}>+</button>

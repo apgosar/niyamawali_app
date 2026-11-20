@@ -20,6 +20,11 @@ export async function POST(req: Request) {
       where active and (father_phone = $1 or mother_phone = $1 or own_phone = $1)`,
     [phone],
   );
+  if (cands.length === 0) {
+    // Counts toward the lockout so the number cannot be probed endlessly.
+    await recordFailedAttempt(phone);
+    return NextResponse.json({ error: "notRegistered" }, { status: 404 });
+  }
   const matches: Cand[] = [];
   for (const c of cands) if (await verifyPin(pin, c.pin_hash)) matches.push(c);
 

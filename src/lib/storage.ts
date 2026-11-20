@@ -14,7 +14,7 @@ import { randomUUID } from "node:crypto";
 const BUCKET = process.env.SUPABASE_BUCKET || "photos";
 const supabaseUrl = () => process.env.SUPABASE_URL?.replace(/\/$/, "");
 const serviceKey = () => process.env.SUPABASE_SERVICE_KEY;
-const hasSupabase = () => Boolean(supabaseUrl() && serviceKey());
+const hasSupabase = () => !process.env.NIYAM_LOCAL && Boolean(supabaseUrl() && serviceKey());
 /**
  * Works with both key styles: the new `sb_secret_…` keys (sent as `apikey`) and the legacy JWT `service_role` key
  * (which also needs `Authorization: Bearer`).

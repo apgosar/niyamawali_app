@@ -82,7 +82,8 @@ const g = globalThis as unknown as { __niyamDb?: Promise<Db> };
 
 export function getDb(): Promise<Db> {
   if (!g.__niyamDb) {
-    const url = process.env.DATABASE_URL;
+    // NIYAM_LOCAL=1 forces the embedded database even if .env.local points at Supabase (safe testing).
+    const url = process.env.NIYAM_LOCAL ? undefined : process.env.DATABASE_URL;
     g.__niyamDb = url ? createPostgres(url) : createPglite();
   }
   return g.__niyamDb;

@@ -54,6 +54,9 @@ body {
 
 h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: 0.005em; }
 
+/* Numbers (points, ranks, counts): plain sans, even-width lining figures */
+.num { font-family: var(--font-body), system-ui, sans-serif; font-weight: 700; font-variant-numeric: lining-nums tabular-nums; letter-spacing: -0.01em; }
+
 /* ---- Reusable pieces ---- */
 @layer components {
   .card {

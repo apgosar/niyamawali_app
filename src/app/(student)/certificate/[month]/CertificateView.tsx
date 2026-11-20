@@ -75,8 +75,8 @@ export function CertificateView(p: Props) {
           </p>
 
           <div className="mt-2 flex items-end gap-6">
-            <div><p className="font-display text-4xl font-bold leading-none text-gold-600">{p.points}</p><p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t.common.points}</p></div>
-            <div><p className="font-display text-4xl font-bold leading-none text-lotus-600">#{p.rank}</p><p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t.common.rank} / {p.total}</p></div>
+            <div><p className="num text-4xl leading-none text-gold-600">{p.points}</p><p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t.common.points}</p></div>
+            <div><p className="num text-4xl leading-none text-lotus-600">#{p.rank}</p><p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t.common.rank} / {p.total}</p></div>
           </div>
 
           <p className="mt-auto text-[11px] text-gold-700">{p.donor ? `${t.today.sponsored}: ${p.donor}` : "🪷"}</p>

@@ -13,7 +13,7 @@ export const BADGES: BadgeDef[] = [
   { code: "streak_108", icon: "🏵️", name: { en: "108-Day Streak", gu: "૧૦૮ દિવસ સળંગ" }, desc: { en: "Logged 108 days in a row", gu: "સળંગ ૧૦૮ દિવસ નોંધ્યા" } },
   { code: "tapasvi", icon: "🙏", name: { en: "Tapasvi", gu: "તપસ્વી" }, desc: { en: "10 Ayambil or Upvas", gu: "૧૦ આયંબિલ અથવા ઉપવાસ" } },
   { code: "gyani", icon: "📖", name: { en: "Gyani", gu: "જ્ઞાની" }, desc: { en: "Learned 25 gathas", gu: "૨૫ ગાથા કરી" } },
-  { code: "mitra", icon: "🤝", name: { en: "Dharma Mitra", gu: "ધર્મ મિત્ર" }, desc: { en: "5 friends joined through your link", gu: "તમારી લિંકથી ૫ મિત્રો જોડાયા" } },
+  { code: "mitra", icon: "🤝", name: { en: "Kalyan Mitra", gu: "કલ્યાણ મિત્ર" }, desc: { en: "5 friends joined through your link", gu: "તમારી લિંકથી ૫ મિત્રો જોડાયા" } },
   { code: "top10", icon: "🏆", name: { en: "Top 10", gu: "ટોપ ૧૦" }, desc: { en: "Finished a month in the top 10", gu: "મહિનાના ટોપ ૧૦ માં સ્થાન" } },
 ];
 

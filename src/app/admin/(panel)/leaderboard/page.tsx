@@ -28,10 +28,10 @@ export default async function AdminLeaderboard({ searchParams }: { searchParams:
           <tbody className="divide-y divide-gold-100">
             {rows.map((r) => (
               <tr key={r.id}>
-                <td className="p-3 font-display text-lg font-bold text-gold-600">{r.rank <= 3 ? ["🥇", "🥈", "🥉"][r.rank - 1] : r.rank}</td>
+                <td className="p-3 num text-lg text-gold-600">{r.rank <= 3 ? ["🥇", "🥈", "🥉"][r.rank - 1] : r.rank}</td>
                 <td className="p-3"><Link href={`/admin/students/${r.id}`} className="flex items-center gap-2 font-semibold hover:underline"><Avatar photoKey={r.photo_key} name={r.first_name} size={32} />{r.first_name} {r.surname}</Link></td>
                 <td className="p-3">{r.sangh}</td>
-                <td className="p-3 text-right font-display text-lg font-bold tabular-nums">{r.points}</td>
+                <td className="p-3 text-right num text-lg">{r.points}</td>
               </tr>
             ))}
             {rows.length === 0 && <tr><td colSpan={4} className="p-8 text-center text-muted">No points recorded for this month.</td></tr>}
