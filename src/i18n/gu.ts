@@ -73,7 +73,7 @@ export const gu: Dict = {
     title: "મારી પ્રોફાઇલ", badges: "બૅજ", badgesHint: "આગળ વધતા રહો અને બૅજ મેળવો", locked: "બંધ",
     referral: "મિત્રોને આમંત્રણ", referralHelp: "તમારો મિત્ર {days} દિવસ નોંધ કરે પછી તમને અને મિત્રને બંનેને {bonus} બોનસ પોઇન્ટ મળશે.",
     yourCode: "તમારો આમંત્રણ કોડ", shareWhatsApp: "WhatsApp પર શેર કરો", shareOther: "શેર કરો…", copyLink: "લિંક કૉપી કરો",
-    shareText: "જય જિનેન્દ્ર 🙏 મારી સાથે નિયમાવલીમાં જોડાઓ – Divine Sanskar Shibir નિયમ ટ્રૅકર. મારા આમંત્રણ કોડ {code} થી રજીસ્ટર કરો: {link}",
+    shareText: "જય જિનેન્દ્ર 🙏 મારી સાથે નિયમાવલીમાં જોડાઓ – Divine Sanskar Shibir નિયમ ટ્રૅકર. મારી લિંકથી રજીસ્ટર કરો અને {days} દિવસ તમારા નિયમ નોંધો, તો આપણને બંનેને {bonus} બોનસ પોઇન્ટ મળશે! 🎁\nમારો આમંત્રણ કોડ: {code}\n{link}",
     invited: "તમે બોલાવેલા મિત્રો", pending: "બાકી", awarded: "+{n} મળ્યા", noInvites: "હજી કોઈ જોડાયું નથી.",
     details: "મારી વિગતો", edit: "ફેરફાર", language: "ભાષા", logout: "લૉગ આઉટ", logoutConfirm: "આ ઉપકરણમાંથી લૉગ આઉટ કરવું છે?",
     install: "ઍપ ઇન્સ્ટૉલ કરો", installHelp: "એક ટૅપમાં ખોલવા નિયમાવલીને હોમ સ્ક્રીન પર ઉમેરો.",

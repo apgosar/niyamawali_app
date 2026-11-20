@@ -71,7 +71,7 @@ export const en = {
     title: "My profile", badges: "Badges", badgesHint: "Earn badges as you keep going", locked: "Locked",
     referral: "Invite friends", referralHelp: "You and your friend each get {bonus} bonus points once they log {days} days.",
     yourCode: "Your invite code", shareWhatsApp: "Share on WhatsApp", shareOther: "Share…", copyLink: "Copy link",
-    shareText: "Jai Jinendra 🙏 Join me on Niyamawali – the Divine Sanskar Shibir niyam tracker. Register with my invite code {code}: {link}",
+    shareText: "Jai Jinendra 🙏 Join me on Niyamawali – the Divine Sanskar Shibir niyam tracker. Sign up using my link and record your niyams for {days} days, and we will both get {bonus} bonus points! 🎁\nMy invite code: {code}\n{link}",
     invited: "Friends you invited", pending: "Pending", awarded: "+{n} earned", noInvites: "No one has joined yet.",
     details: "My details", edit: "Edit", language: "Language", logout: "Log out", logoutConfirm: "Log out of this device?",
     install: "Install the app", installHelp: "Add Niyamawali to your home screen for one-tap access.",

@@ -18,7 +18,7 @@ export function ReferralCard({ code, bonus, days, referrals }: Props) {
   const canShare = useSyncExternalStore(none, () => typeof navigator.share === "function", () => false);
   const link = `${origin}/register?ref=${code}`;
 
-  const text = f(t.profile.shareText, { code, link });
+  const text = f(t.profile.shareText, { code, link, bonus: n(bonus), days: n(days) });
 
   async function copy(value: string) {
     try { await navigator.clipboard.writeText(value); }
