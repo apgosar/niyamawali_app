@@ -91,8 +91,11 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
   Student page: all details, month-by-month totals, last 30 days, badges, referrals, **Reset PIN**,
   add/remove bonus points, deactivate.
 - **Niyams:** edit Gujarati/English text, points, option points, order, active/inactive, add new niyams.
-  Points are stored with each entry, so changing points affects **new** entries only – tick *Also update past entries*
-  to re-score what students already logged (do this once when you replace the placeholder 10 points).
+  Edit as many as you like and press **Save all changes** once – one button floats at the bottom-right of the screen while you scroll,
+  and another sits at the end of the page. The page does not jump, and nothing is saved if any value is invalid.
+  Points are stored with each entry, so changing points affects **new** entries only – tick *Also re-score past entries*
+  (above the bottom Save button) to re-score what students already logged for the niyams whose points you changed
+  (do this once when you replace the placeholder 10 points).
 - **Donors:** sponsor for a month (name, optional photo, Gujarati/English message) – shown on every student’s home,
   at the top of the leaderboard and on certificates.
 - **Unlock edits** (for boarding / hostel students and corrections): search by **Student ID** (or name / phone), choose how many past

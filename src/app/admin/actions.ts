@@ -12,6 +12,7 @@ import { saveSettings } from "@/lib/settings";
 import { parseStreakBonuses } from "@/lib/streaks";
 import { todayIST, isValidMonth, fmtIST } from "@/lib/dates";
 import { grantEdit, revokeGrant } from "@/lib/grants";
+import { addNiyamRow, EditError, saveNiyamEdits, type NiyamEdit, type OptionEdit } from "@/lib/niyams-admin";
 
 export interface ActionState { error?: string; ok?: string; pin?: string }
 
@@ -93,59 +94,53 @@ export async function deleteBonus(fd: FormData) {
 
 /* ---------------- niyams ---------------- */
 
-async function recalcNiyam(id: number) {
-  await query(
-    `update daily_logs l set points = n.points from niyams n
-      where l.niyam_id = n.id and n.id = $1 and n.type = 'boolean'`, [id]);
-  await query(
-    `update daily_logs l set points = l.value * n.points_per_unit from niyams n
-      where l.niyam_id = n.id and n.id = $1 and n.type = 'count'`, [id]);
-  await query(
-    `update daily_logs l set points = o.points from niyam_options o
-      where l.niyam_id = $1 and o.niyam_id = l.niyam_id and o.id = l.value`, [id]);
-}
-
-export async function updateNiyam(fd: FormData) {
+/** Save every niyam and option on the page in one go (no redirect, so the page keeps its scroll position). */
+export async function saveNiyamsAction(_prev: ActionState | null, fd: FormData): Promise<ActionState> {
   await requireAdmin();
-  const id = int(fd, "id");
-  await query(
-    `update niyams set name_gu = $2, name_en = $3, sort_order = $4, active = $5,
-            points = $6, points_per_unit = $7, max_count = $8 where id = $1`,
-    [id, s(fd, "name_gu"), s(fd, "name_en"), int(fd, "sort_order"), fd.get("active") === "on",
-     Math.max(0, int(fd, "points")), Math.max(0, int(fd, "points_per_unit")), Math.max(1, int(fd, "max_count", 10))],
-  );
-  if (fd.get("recalc") === "on") await recalcNiyam(id);
-  revalidatePath("/admin/niyams");
-  redirect(`/admin/niyams?saved=${id}`);
+  const ids = (k: string) => String(fd.get(k) ?? "").split(",").map(Number).filter((n) => Number.isInteger(n));
+  const num = (k: string) => (fd.has(k) ? Number(fd.get(k)) : undefined);
+  const niyams: NiyamEdit[] = ids("ids").map((id) => ({
+    id,
+    sort_order: Number(fd.get(`n${id}_sort`)),
+    name_gu: s(fd, `n${id}_gu`),
+    name_en: s(fd, `n${id}_en`),
+    active: fd.get(`n${id}_active`) === "on",
+    points: num(`n${id}_points`),
+    points_per_unit: num(`n${id}_ppu`),
+    max_count: num(`n${id}_max`),
+  }));
+  const options: OptionEdit[] = ids("opt_ids").map((id) => ({
+    id,
+    label_gu: s(fd, `o${id}_gu`),
+    label_en: s(fd, `o${id}_en`),
+    points: Number(fd.get(`o${id}_points`)),
+    active: fd.get(`o${id}_active`) === "on",
+  }));
+  try {
+    const r = await saveNiyamEdits(niyams, options, fd.get("rescore") === "on");
+    revalidatePath("/admin/niyams");
+    if (r.changed === 0) return { ok: "Nothing to save — no changes were made." };
+    return { ok: `Saved ✓ ${r.changed} change${r.changed === 1 ? "" : "s"}${r.rescored ? `, past entries re-scored for ${r.rescored} niyam${r.rescored === 1 ? "" : "s"}` : ""}.` };
+  } catch (e) {
+    if (e instanceof EditError) return { error: e.message };
+    console.error("saveNiyams failed", e);
+    return { error: "Could not save. Please try again." };
+  }
 }
 
-export async function addNiyam(fd: FormData) {
+export async function addNiyamAction(_prev: ActionState | null, fd: FormData): Promise<ActionState> {
   await requireAdmin();
   const type = s(fd, "type", 10);
-  if (!["boolean", "count"].includes(type)) redirect("/admin/niyams");
-  const max = await one<{ m: number }>("select coalesce(max(sort_order),0)::int as m from niyams");
-  await query(
-    `insert into niyams (sort_order, name_gu, name_en, type, points, points_per_unit, max_count)
-     values ($1,$2,$3,$4,$5,$6,$7)`,
-    [(max?.m ?? 0) + 1, s(fd, "name_gu") || s(fd, "name_en"), s(fd, "name_en") || s(fd, "name_gu"), type,
-     type === "boolean" ? Math.max(0, int(fd, "points", 10)) : 0,
-     type === "count" ? Math.max(0, int(fd, "points", 10)) : 0, 10],
-  );
-  revalidatePath("/admin/niyams");
-  redirect("/admin/niyams?added=1");
-}
-
-export async function updateOption(fd: FormData) {
-  await requireAdmin();
-  const id = int(fd, "id");
-  const row = await one<{ niyam_id: number }>(
-    `update niyam_options set label_gu = $2, label_en = $3, points = $4, active = $5
-      where id = $1 returning niyam_id`,
-    [id, s(fd, "label_gu"), s(fd, "label_en"), Math.max(0, int(fd, "points")), fd.get("active") === "on"],
-  );
-  if (row && fd.get("recalc") === "on") await recalcNiyam(row.niyam_id);
-  revalidatePath("/admin/niyams");
-  redirect(`/admin/niyams?saved=o${id}`);
+  if (type !== "boolean" && type !== "count") return { error: "Pick a type." };
+  try {
+    const no = await addNiyamRow({ name_gu: s(fd, "name_gu"), name_en: s(fd, "name_en"), type, points: Math.max(0, int(fd, "points", 10)) });
+    revalidatePath("/admin/niyams");
+    return { ok: `Added as niyam ${no}. Scroll up to see it at the end of the list.` };
+  } catch (e) {
+    if (e instanceof EditError) return { error: e.message };
+    console.error("addNiyam failed", e);
+    return { error: "Could not add. Please try again." };
+  }
 }
 
 /* ---------------- donors ---------------- */
