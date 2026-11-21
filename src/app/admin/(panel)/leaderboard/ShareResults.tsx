@@ -1,8 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
-import { toBlob } from "html-to-image";
 import { FitToWidth } from "@/components/FitToWidth";
 import { TopThreeCard, type TopRow } from "@/components/TopThreeCard";
+import { usePreparedPng } from "@/lib/render";
 import { downloadBlob, shareImage } from "@/lib/share";
 
 interface Props {
@@ -17,8 +17,11 @@ const MEDAL = ["🥇", "🥈", "🥉"];
 
 export function ShareResults({ month, monthEn, monthGu, rows, donor }: Props) {
   const card = useRef<HTMLDivElement>(null);
-  const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  // The picture is built as soon as this section opens, so Share works at the first tap (phones require that).
+  const picture = usePreparedPng(card, "top3");
+  const ready = picture.status === "ready" && !!picture.blob;
+  const file = `niyamawali-top3-${month}.png`;
 
   const link = () => `${window.location.origin}/results/${month}`;
   const message = () =>
@@ -31,25 +34,14 @@ export function ShareResults({ month, monthEn, monthGu, rows, donor }: Props) {
       link(),
     ].join("\n");
 
-  async function render(): Promise<Blob> {
-    const b = await toBlob(card.current!, { pixelRatio: 3, cacheBust: true, backgroundColor: "#fbf6ec" });
-    if (!b) throw new Error("render failed");
-    return b;
-  }
-
-  async function run(action: "share" | "download") {
-    setBusy(true);
+  async function share() {
+    if (!picture.blob) return;
     setNote(null);
     try {
-      const blob = await render();
-      const file = `niyamawali-top3-${month}.png`;
-      if (action === "download") { downloadBlob(blob, file); return; }
-      const r = await shareImage(blob, file, message());
+      const r = await shareImage(picture.blob, file, message());
       if (r === "downloaded") setNote("Your browser cannot attach pictures directly. The picture was saved and WhatsApp opened with the message — attach the saved picture before sending. (On a phone the picture and message are shared together.)");
     } catch {
-      setNote("Could not create the picture. Please try again.");
-    } finally {
-      setBusy(false);
+      setNote("Could not open sharing. Use “Download picture” and “Copy message” instead.");
     }
   }
 
@@ -73,12 +65,19 @@ export function ShareResults({ month, monthEn, monthGu, rows, donor }: Props) {
         </p>
         <pre className="mt-3 max-h-44 overflow-auto whitespace-pre-wrap rounded-xl bg-gold-50 p-3 text-xs">{`🏆 Niyamawali – ${monthEn} Top 3 🏆\n${rows.map((r) => `${MEDAL[r.rank - 1] ?? r.rank + "."} ${r.name}`).join("\n")}\n\n… link to /results/${month}`}</pre>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" className="btn bg-[#25D366] text-white shadow-soft" disabled={busy} onClick={() => run("share")}>
-            {busy ? "Preparing…" : "Share on WhatsApp"}
-          </button>
-          <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => run("download")}>⬇ Download picture</button>
+          {picture.status === "error" ? (
+            <button type="button" className="btn btn-gold" onClick={picture.retry}>Try again</button>
+          ) : (
+            <>
+              <button type="button" className="btn bg-[#25D366] text-white shadow-soft" disabled={!ready} onClick={share}>
+                {ready ? "Share on WhatsApp" : "Preparing picture…"}
+              </button>
+              <button type="button" className="btn btn-ghost" disabled={!ready} onClick={() => picture.blob && downloadBlob(picture.blob, file)}>⬇ Download picture</button>
+            </>
+          )}
           <button type="button" className="btn btn-ghost" onClick={copy}>Copy message</button>
         </div>
+        {picture.status === "error" && <p role="alert" className="err mt-3">The picture could not be created. Check the connection and try again.</p>}
         {note && <p role="status" className="mt-3 rounded-xl bg-gold-50 p-3 text-sm text-gold-700">{note}</p>}
       </div>
     </section>

@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { toBlob } from "html-to-image";
 import { useI18n } from "@/components/I18nProvider";
+import { usePreparedPng } from "@/lib/render";
+import { downloadBlob, shareImage } from "@/lib/share";
 
 interface Props {
   name: string; photoKey: string; monthText: string; points: number; rank: number; total: number;
@@ -21,34 +22,15 @@ export function CertificateView(p: Props) {
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
   }, []);
-  const [busy, setBusy] = useState(false);
   const gu = lang === "gu";
-
-  async function render(): Promise<Blob | null> {
-    if (!ref.current) return null;
-    return toBlob(ref.current, { pixelRatio: 3, cacheBust: true, backgroundColor: "#fbf6ec" });
-  }
-
-  async function download() {
-    setBusy(true);
-    try {
-      const blob = await render();
-      if (!blob) return;
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob); a.download = `${p.fileName}.png`; a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    } finally { setBusy(false); }
-  }
+  // Built while the page is open, so Share can start the moment it is tapped.
+  const picture = usePreparedPng(ref, "certificate");
+  const ready = picture.status === "ready" && !!picture.blob;
+  const file = `${p.fileName}.png`;
 
   async function share() {
-    setBusy(true);
-    try {
-      const blob = await render();
-      if (!blob) return;
-      const file = new File([blob], `${p.fileName}.png`, { type: "image/png" });
-      if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: t.appName }).catch(() => {});
-      else await download();
-    } finally { setBusy(false); }
+    if (!picture.blob) return;
+    try { await shareImage(picture.blob, file, t.appName); } catch { /* ignore */ }
   }
 
   return (
@@ -84,9 +66,16 @@ export function CertificateView(p: Props) {
        </div>
       </div>
 
-      <div className="mx-auto mt-4 grid max-w-[360px] grid-cols-2 gap-3">
-        <button type="button" className="btn btn-gold" disabled={busy} onClick={share}>{t.common.share}</button>
-        <button type="button" className="btn btn-ghost" disabled={busy} onClick={download}>{t.common.download}</button>
+      <div className="mx-auto mt-4 max-w-[360px]">
+        {picture.status === "error" ? (
+          <button type="button" className="btn btn-gold w-full" onClick={picture.retry}>{t.common.retry}</button>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" className="btn btn-gold" disabled={!ready} onClick={share}>{ready ? t.common.share : t.sheet.preparing}</button>
+            <button type="button" className="btn btn-ghost" disabled={!ready} onClick={() => picture.blob && downloadBlob(picture.blob, file)}>{t.common.download}</button>
+          </div>
+        )}
+        {picture.status === "error" && <p role="alert" className="err mt-2 text-center">{t.common.somethingWrong}</p>}
       </div>
     </div>
   );

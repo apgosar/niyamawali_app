@@ -2,10 +2,10 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { toBlob } from "html-to-image";
 import { useI18n } from "@/components/I18nProvider";
 import { FitToWidth } from "@/components/FitToWidth";
 import { BADGES, type BadgeDef } from "@/lib/badges";
+import { usePreparedPng } from "@/lib/render";
 import { shareImage } from "@/lib/share";
 
 interface Props {
@@ -48,32 +48,30 @@ function BadgeModal({ badge, earnedOn, studentName, referralCode, onClose }: {
 }) {
   const { t, lang, f } = useI18n();
   const card = useRef<HTMLDivElement>(null);
-  const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const got = !!earnedOn;
+  // The picture is built while the card is on screen, so tapping Share can open the share sheet immediately.
+  const picture = usePreparedPng(card, "badge", got);
   const dateText = earnedOn
     ? new Date(`${earnedOn}T00:00:00+05:30`).toLocaleDateString(lang === "gu" ? "gu-IN" : "en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" })
     : "";
 
   async function share() {
-    setBusy(true);
+    if (!picture.blob) return;
     setNote(null);
+    const text = `${f(t.badge.shareText, { name: badge.name[lang], desc: badge.desc[lang] })}\n${window.location.origin}/register?ref=${referralCode}`;
     try {
-      const blob = await toBlob(card.current!, { pixelRatio: 3, cacheBust: true, backgroundColor: "#fbf6ec" });
-      if (!blob) throw new Error("render failed");
-      const text = `${f(t.badge.shareText, { name: badge.name[lang], desc: badge.desc[lang] })}\n${window.location.origin}/register?ref=${referralCode}`;
-      const r = await shareImage(blob, `niyamawali-badge-${badge.code}.png`, text);
+      const r = await shareImage(picture.blob, `niyamawali-badge-${badge.code}.png`, text);
       if (r === "downloaded") setNote(t.badge.saved);
     } catch {
       setNote(t.common.somethingWrong);
-    } finally {
-      setBusy(false);
     }
   }
 
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={badge.name[lang]} onClick={onClose}
-      className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-gold-900/70 p-4 backdrop-blur-sm">
+      className="fixed inset-0 z-[60] overflow-y-auto bg-gold-900/70 backdrop-blur-sm">
+     <div className="flex min-h-full items-center justify-center p-4">
       <div className="fade-up w-full max-w-sm rounded-3xl bg-ivory p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="overflow-hidden rounded-2xl shadow-soft">
           <FitToWidth width={320}>
@@ -92,15 +90,20 @@ function BadgeModal({ badge, earnedOn, studentName, referralCode, onClose }: {
         </div>
 
         <div className="mt-4 grid gap-2">
-          {got && (
-            <button type="button" className="btn bg-[#25D366] text-white shadow-soft" disabled={busy} onClick={share}>
-              {busy ? t.common.loading : `${t.badge.share}`}
+          {got && picture.status === "error" && (
+            <button type="button" className="btn btn-gold" onClick={picture.retry}>{t.common.retry}</button>
+          )}
+          {got && picture.status !== "error" && (
+            <button type="button" className="btn bg-[#25D366] text-white shadow-soft" disabled={picture.status !== "ready"} onClick={share}>
+              {picture.status === "ready" ? t.badge.share : t.sheet.preparing}
             </button>
           )}
           <button type="button" className="btn btn-ghost" onClick={onClose}>{t.badge.close}</button>
         </div>
+        {picture.status === "error" && <p role="alert" className="err mt-3 text-center">{t.common.somethingWrong}</p>}
         {note && <p role="status" className="mt-3 rounded-xl bg-gold-50 p-3 text-center text-sm text-gold-700">{note}</p>}
       </div>
+     </div>
     </div>,
     document.body,
   );
