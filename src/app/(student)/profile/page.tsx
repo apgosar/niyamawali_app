@@ -5,6 +5,7 @@ import { getBadges } from "@/lib/logs";
 import { referralsOf } from "@/lib/referrals";
 import { getSettings } from "@/lib/settings";
 import { Avatar } from "@/components/Avatar";
+import { LinkSpinner } from "@/components/LinkSpinner";
 import { LangToggle } from "@/components/LangToggle";
 import { fmt } from "@/i18n";
 import { ReferralCard } from "./ReferralCard";
@@ -38,7 +39,7 @@ export default async function ProfilePage() {
         <section className="card p-4">
           <h2 className="text-lg font-bold text-gold-700">{t.profile.badges}</h2>
           <p className="hint mb-3">{t.profile.badgesHint}</p>
-          <BadgeGrid earned={earnedMap} studentName={name} referralCode={student.referral_code} />
+          <BadgeGrid earned={earnedMap} studentName={name} referralCode={student.referral_code} bonus={settings.referralBonus} days={settings.referralUnlockDays} />
         </section>
 
         <ReferralCard code={student.referral_code} bonus={settings.referralBonus} days={settings.referralUnlockDays}
@@ -48,10 +49,10 @@ export default async function ProfilePage() {
 
         <section className="card divide-y divide-gold-100">
           <Link href="/sheet" className="flex items-center justify-between p-4 font-semibold text-gold-700">
-            <span>🖨️ {t.sheet.menu}<span className="block text-xs font-normal text-muted">{t.sheet.menuHelp}</span></span><span aria-hidden>›</span>
+            <span>🖨️ {t.sheet.menu}<span className="block text-xs font-normal text-muted">{t.sheet.menuHelp}</span></span><span className="flex items-center gap-2 text-gold-600"><LinkSpinner /><span aria-hidden>›</span></span>
           </Link>
           <Link href="/profile/edit" className="flex items-center justify-between p-4 font-semibold text-gold-700">
-            <span>✏️ {t.profile.details}</span><span aria-hidden>›</span>
+            <span>✏️ {t.profile.details}</span><span className="flex items-center gap-2 text-gold-600"><LinkSpinner /><span aria-hidden>›</span></span>
           </Link>
           <div className="flex items-center justify-between p-4">
             <span className="font-semibold text-gold-700">🌐 {t.profile.language}</span>

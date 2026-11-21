@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
 import { addNiyam, updateNiyam, updateOption } from "../../actions";
+import { SubmitButton } from "@/app/admin/SubmitButton";
 
 export const metadata = { title: "Niyams" };
 
@@ -42,7 +43,7 @@ export default async function NiyamsPage({ searchParams }: { searchParams: Promi
                 {n.type === "choice" && <p className="pb-3 text-sm text-muted">Points are set per option below.</p>}
                 <label className="flex items-center gap-2 pb-3 text-sm"><input type="checkbox" name="active" defaultChecked={n.active} className="h-5 w-5 accent-[#b8862b]" /> Active</label>
                 {n.type !== "choice" && <label className="flex items-center gap-2 pb-3 text-sm"><input type="checkbox" name="recalc" className="h-5 w-5 accent-[#b8862b]" /> Also update past entries</label>}
-                <button className="btn btn-gold ml-auto min-h-10">Save</button>
+                <SubmitButton className="btn btn-gold ml-auto min-h-10" pendingText="Saving…">Save</SubmitButton>
               </div>
             </form>
 
@@ -56,7 +57,7 @@ export default async function NiyamsPage({ searchParams }: { searchParams: Promi
                     <div className="w-24"><label className="label">Points</label><input name="points" type="number" min={0} defaultValue={o.points} className="field" /></div>
                     <label className="flex items-center gap-2 pb-3 text-sm"><input type="checkbox" name="active" defaultChecked={o.active} className="h-5 w-5 accent-[#b8862b]" /> Active</label>
                     <label className="flex items-center gap-2 pb-3 text-sm"><input type="checkbox" name="recalc" className="h-5 w-5 accent-[#b8862b]" /> Update past</label>
-                    <button className="btn btn-ghost min-h-10">Save</button>
+                    <SubmitButton className="btn btn-ghost min-h-10" pendingText="Saving…">Save</SubmitButton>
                   </form>
                 ))}
               </div>
@@ -72,7 +73,7 @@ export default async function NiyamsPage({ searchParams }: { searchParams: Promi
           <div><label className="label">English</label><input name="name_en" className="field" /></div>
           <div><label className="label">Type</label><select name="type" className="field"><option value="boolean">Yes / No</option><option value="count">Count (× points)</option></select></div>
           <div><label className="label">Points</label><input name="points" type="number" min={0} defaultValue={10} className="field" /></div>
-          <button className="btn btn-gold">Add</button>
+          <SubmitButton className="btn btn-gold" pendingText="Adding…">Add</SubmitButton>
         </form>
       </section>
     </div>

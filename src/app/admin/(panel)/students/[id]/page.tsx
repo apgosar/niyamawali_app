@@ -8,6 +8,7 @@ import { deleteBonus, toggleStudentActive } from "../../../actions";
 import { BonusForm, ResetPinForm } from "../../../forms";
 import { RevokeButton, UnlockForm } from "../../../UnlockForm";
 import { getSettings } from "@/lib/settings";
+import { SubmitButton } from "@/app/admin/SubmitButton";
 import { listGrantsFor } from "@/lib/grants";
 
 export const metadata = { title: "Student" };
@@ -93,7 +94,7 @@ export default async function StudentDetail({ params }: { params: Promise<{ id: 
           <div className="divider text-xs">◆</div>
           <form action={toggleStudentActive}>
             <input type="hidden" name="id" value={id} />
-            <button className={`btn w-full ${s.active ? "border border-danger text-danger" : "btn-gold"}`}>{s.active ? "Deactivate student" : "Reactivate student"}</button>
+            <SubmitButton className={`btn w-full ${s.active ? "border border-danger text-danger" : "btn-gold"}`} pendingText="Saving…">{s.active ? "Deactivate student" : "Reactivate student"}</SubmitButton>
             {s.active && <p className="hint mt-1">Hides them from the leaderboard and signs them out. Data is kept.</p>}
           </form>
         </section>
@@ -132,7 +133,7 @@ export default async function StudentDetail({ params }: { params: Promise<{ id: 
             {bonuses.map((b) => (
               <li key={b.id} className="flex items-center justify-between gap-2 py-2">
                 <span><b className={b.points < 0 ? "text-danger" : "text-sage-700"}>{b.points > 0 ? "+" : ""}{b.points}</b> <span className="text-muted">· {b.kind} · {b.awarded_on}</span><br /><span className="text-xs text-muted">{b.note}</span></span>
-                {b.kind === "manual" && <form action={deleteBonus}><input type="hidden" name="id" value={id} /><input type="hidden" name="bonusId" value={b.id} /><button className="text-xs font-semibold text-danger">Remove</button></form>}
+                {b.kind === "manual" && <form action={deleteBonus}><input type="hidden" name="id" value={id} /><input type="hidden" name="bonusId" value={b.id} /><SubmitButton className="text-xs font-semibold text-danger" pendingText="Removing…">Remove</SubmitButton></form>}
               </li>
             ))}
             {bonuses.length === 0 && <li className="py-4 text-center text-muted">None.</li>}

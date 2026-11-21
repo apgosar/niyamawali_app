@@ -2,6 +2,7 @@ import { query } from "@/lib/db";
 import { monthLabel, monthOf, todayIST } from "@/lib/dates";
 import { Avatar } from "@/components/Avatar";
 import { deleteDonor } from "../../actions";
+import { SubmitButton } from "@/app/admin/SubmitButton";
 import { DonorForm } from "../../forms";
 
 export const metadata = { title: "Donors" };
@@ -24,7 +25,7 @@ export default async function DonorsPage() {
             <li key={d.month} className="flex items-center gap-3 py-3">
               {d.photo_key ? <Avatar photoKey={d.photo_key} name={d.name} size={48} /> : <span className="text-3xl">🪔</span>}
               <div className="min-w-0 flex-1"><p className="font-semibold">{d.name}</p><p className="truncate text-xs text-muted">{monthLabel(d.month, "en")} · {d.message_en || d.message_gu}</p></div>
-              <form action={deleteDonor}><input type="hidden" name="month" value={d.month} /><button className="text-sm font-semibold text-danger">Remove</button></form>
+              <form action={deleteDonor}><input type="hidden" name="month" value={d.month} /><SubmitButton className="text-sm font-semibold text-danger" pendingText="Removing…">Remove</SubmitButton></form>
             </li>
           ))}
           {donors.length === 0 && <li className="py-4 text-center text-muted">No donors yet.</li>}

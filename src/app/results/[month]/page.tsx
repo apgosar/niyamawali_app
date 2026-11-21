@@ -8,6 +8,7 @@ import { awardTop10, donorFor, monthlyLeaderboard } from "@/lib/leaderboard";
 import { FitToWidth } from "@/components/FitToWidth";
 import { TopThreeCard } from "@/components/TopThreeCard";
 import { LangToggle } from "@/components/LangToggle";
+import { LinkSpinner } from "@/components/LinkSpinner";
 
 export const metadata = { title: "Results" };
 
@@ -71,7 +72,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ month:
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{t.results.rank} · {fmt(t.results.rankOf, { total })}</p>
                   </div>
                 </div>
-                <Link href={`/certificate/${month}`} className="btn btn-gold mt-4 w-full">🏅 {t.results.certificate}</Link>
+                <Link href={`/certificate/${month}`} className="btn btn-gold mt-4 w-full">🏅 {t.results.certificate} <LinkSpinner /></Link>
               </>
             ) : (
               <p className="mt-2 text-sm text-muted">{t.results.noPoints}</p>

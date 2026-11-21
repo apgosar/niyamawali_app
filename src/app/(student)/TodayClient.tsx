@@ -42,6 +42,7 @@ export function TodayClient(p: Props) {
   const [toast, setToast] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingDay, setLoadingDay] = useState<string | null>(null);
 
   const totalsCard = useRef<HTMLDivElement>(null);
   const [showBar, setShowBar] = useState(false); // floating bar appears once the totals card scrolls away
@@ -189,7 +190,8 @@ export function TodayClient(p: Props) {
 
   function pickDate(d: string) {
     setDate(d);
-    loadDate(d);
+    setLoadingDay(d);
+    loadDate(d).finally(() => setLoadingDay((c) => (c === d ? null : c)));
   }
 
   const chipLabel = (d: string) => {
@@ -254,6 +256,7 @@ export function TodayClient(p: Props) {
                 className={`shrink-0 rounded-full border-2 px-4 py-2 text-sm font-semibold transition ${
                   d.date === date ? "border-gold-500 bg-gold-500 text-white" : "border-gold-100 bg-ivory text-gold-700"}`}>
                 {!d.editable ? "🔒 " : d.viaGrant ? "🔓 " : d.submitted ? "✓ " : ""}{chipLabel(d.date)}
+                {loadingDay === d.date && <span aria-hidden className="ml-2 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent align-[-2px]" />}
               </button>
             ))}
           </div>
@@ -284,7 +287,7 @@ export function TodayClient(p: Props) {
           <NiyamCard key={`${date}-${nm.id}`} niyam={nm} options={p.options} value={entries[nm.id]?.value ?? 0}
             locked={!editable} onChange={(v) => change(nm, v)} />
         ))}
-        {!entries && <p className="py-10 text-center text-muted">{t.common.loading}</p>}
+        {!entries && Array.from({ length: 6 }).map((_, i) => <div key={i} className="skeleton h-16 w-full !rounded-2xl" />)}
 
         {/* ---- submit / submitted ---- */}
         {entries && day && !submitted && editable && (

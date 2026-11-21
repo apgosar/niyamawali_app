@@ -102,6 +102,7 @@ export const gu: Dict = {
   badge: {
     share: "WhatsApp પર શેર કરો", earnedOn: "{date} એ મળ્યો", notEarned: "હજી મળ્યો નથી – આગળ વધતા રહો!", close: "બંધ કરો",
     shareText: "મને નિયમાવલી – Divine Sanskar Shibir માં “{name}” બૅજ મળ્યો! 🏅 {desc}",
+    inviteLine: "મારી લિંકથી રજીસ્ટર કરો અને {days} દિવસ તમારા નિયમ નોંધો, તો આપણને બંનેને {bonus} બોનસ પોઇન્ટ મળશે! 🎁",
     saved: "ચિત્ર સેવ થયું. તેને તમારા WhatsApp સંદેશ સાથે જોડો.",
   },
   sheet: {

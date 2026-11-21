@@ -89,6 +89,11 @@ export function LoginForm({ next = "/" }: { next?: string }) {
         <PinPad value={pin} disabled={busy} invalid={!!error}
           onChange={(v) => { setPin(v); setError(null); if (v.length === 4) submit(v); }} />
 
+        {busy && !notice && (
+          <p role="status" className="mt-4 flex items-center justify-center gap-2 text-sm font-semibold text-gold-700">
+            <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-gold-500 border-t-transparent" />{t.common.loading}
+          </p>
+        )}
         {error && <p role="alert" className="err mt-4 text-center">{error}</p>}
         {notice && <p role="status" className="mt-4 rounded-xl bg-gold-50 p-3 text-center text-sm font-semibold text-gold-700">{notice}</p>}
       </div>

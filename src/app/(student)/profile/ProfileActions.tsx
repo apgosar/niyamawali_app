@@ -38,14 +38,16 @@ export function InstallCard() {
 
 export function LogoutButton() {
   const { t } = useI18n();
+  const [busy, setBusy] = useState(false);
   async function logout() {
     if (!confirm(t.profile.logoutConfirm)) return;
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.assign("/login");
+    setBusy(true);
+    try { await fetch("/api/auth/logout", { method: "POST" }); } finally { window.location.assign("/login"); }
   }
   return (
-    <button type="button" onClick={logout} className="flex w-full items-center justify-between p-4 text-left font-semibold text-danger">
-      <span>🚪 {t.profile.logout}</span><span aria-hidden>›</span>
+    <button type="button" onClick={logout} disabled={busy} aria-busy={busy} className="flex w-full items-center justify-between p-4 text-left font-semibold text-danger disabled:opacity-70">
+      <span>🚪 {t.profile.logout}</span>
+      {busy ? <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <span aria-hidden>›</span>}
     </button>
   );
 }

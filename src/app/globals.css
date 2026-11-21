@@ -102,6 +102,15 @@ h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: 0.
 @keyframes flame { 0%,100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.08) rotate(2deg); } }
 .flame { display: inline-block; animation: flame 1.6s ease-in-out infinite; }
 
+/* Loading placeholders: shown instantly while a page is being fetched */
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.skeleton {
+  border-radius: .85rem;
+  background: linear-gradient(90deg, #f3e8d2 25%, #fbf3df 50%, #f3e8d2 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

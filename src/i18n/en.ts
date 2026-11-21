@@ -100,6 +100,7 @@ export const en = {
   badge: {
     share: "Share on WhatsApp", earnedOn: "Earned on {date}", notEarned: "Not earned yet – keep going!", close: "Close",
     shareText: "I earned the “{name}” badge on Niyamawali – Divine Sanskar Shibir! 🏅 {desc}",
+    inviteLine: "Sign up using my link and record your niyams for {days} days, and we will both get {bonus} bonus points! 🎁",
     saved: "Image saved. Attach it to your WhatsApp message.",
   },
   sheet: {

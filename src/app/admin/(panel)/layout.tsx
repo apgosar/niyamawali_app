@@ -2,6 +2,7 @@ import Image from "next/image";
 import { requireAdmin } from "@/lib/auth";
 import { adminLogout } from "../actions";
 import { AdminNav } from "./AdminNav";
+import { SubmitButton } from "@/app/admin/SubmitButton";
 
 export const metadata = { title: { default: "Admin", template: "%s · Admin" } };
 
@@ -15,7 +16,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
           <p className="font-display text-xl font-bold leading-tight text-gold-700">Niyamawali Admin</p>
           <p className="text-xs text-muted">Signed in as {admin.name}</p>
         </div>
-        <form action={adminLogout}><button className="btn btn-ghost min-h-10 px-3 py-1.5 text-sm">Sign out</button></form>
+        <form action={adminLogout}><SubmitButton className="btn btn-ghost min-h-10 px-3 py-1.5 text-sm" pendingText="Signing out…">Sign out</SubmitButton></form>
       </header>
       <AdminNav />
       <div className="mt-5">{children}</div>

@@ -1,4 +1,5 @@
 import { grantEditAction, revokeGrantAction } from "./actions";
+import { SubmitButton } from "./SubmitButton";
 
 /** "Unlock editing" form: the student may edit the last N days for the next H hours. */
 export function UnlockForm({ studentId, back, defaultDays, defaultHours, compact = false }: {
@@ -23,7 +24,7 @@ export function UnlockForm({ studentId, back, defaultDays, defaultHours, compact
         <label className="label" htmlFor={`note-${uid}`}>Note (optional)</label>
         <input id={`note-${uid}`} name="note" className="field" maxLength={200} placeholder="e.g. Parents called – hostel sheet of 1–15 Nov" />
       </div>
-      <button className="btn btn-gold w-full">🔓 Unlock editing</button>
+      <SubmitButton className="btn btn-gold w-full" pendingText="Unlocking…">🔓 Unlock editing</SubmitButton>
       <p className="hint">Today counts as day 1. The student can change any of these days, even ones already submitted, until the time is up. A new unlock replaces an earlier one.</p>
     </form>
   );
@@ -34,7 +35,7 @@ export function RevokeButton({ grantId, back }: { grantId: number; back: string 
     <form action={revokeGrantAction}>
       <input type="hidden" name="grantId" value={grantId} />
       <input type="hidden" name="back" value={back} />
-      <button className="text-sm font-semibold text-danger">Lock again</button>
+      <SubmitButton className="text-sm font-semibold text-danger" pendingText="Locking…">Lock again</SubmitButton>
     </form>
   );
 }

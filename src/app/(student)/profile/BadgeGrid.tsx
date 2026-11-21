@@ -13,9 +13,12 @@ interface Props {
   earned: Record<string, string>;
   studentName: string;
   referralCode: string;
+  /** referral bonus (points each) and the number of logged days after which it is paid */
+  bonus: number;
+  days: number;
 }
 
-export function BadgeGrid({ earned, studentName, referralCode }: Props) {
+export function BadgeGrid({ earned, studentName, referralCode, bonus, days }: Props) {
   const { lang } = useI18n();
   const [open, setOpen] = useState<BadgeDef | null>(null);
 
@@ -37,16 +40,16 @@ export function BadgeGrid({ earned, studentName, referralCode }: Props) {
         })}
       </ul>
       {open && (
-        <BadgeModal badge={open} earnedOn={earned[open.code] ?? null} studentName={studentName} referralCode={referralCode} onClose={() => setOpen(null)} />
+        <BadgeModal badge={open} earnedOn={earned[open.code] ?? null} studentName={studentName} referralCode={referralCode} bonus={bonus} days={days} onClose={() => setOpen(null)} />
       )}
     </>
   );
 }
 
-function BadgeModal({ badge, earnedOn, studentName, referralCode, onClose }: {
-  badge: BadgeDef; earnedOn: string | null; studentName: string; referralCode: string; onClose: () => void;
+function BadgeModal({ badge, earnedOn, studentName, referralCode, bonus, days, onClose }: {
+  badge: BadgeDef; earnedOn: string | null; studentName: string; referralCode: string; bonus: number; days: number; onClose: () => void;
 }) {
-  const { t, lang, f } = useI18n();
+  const { t, lang, f, n } = useI18n();
   const card = useRef<HTMLDivElement>(null);
   const [note, setNote] = useState<string | null>(null);
   const got = !!earnedOn;
@@ -59,7 +62,11 @@ function BadgeModal({ badge, earnedOn, studentName, referralCode, onClose }: {
   async function share() {
     if (!picture.blob) return;
     setNote(null);
-    const text = `${f(t.badge.shareText, { name: badge.name[lang], desc: badge.desc[lang] })}\n${window.location.origin}/register?ref=${referralCode}`;
+    const text = [
+      f(t.badge.shareText, { name: badge.name[lang], desc: badge.desc[lang] }),
+      f(t.badge.inviteLine, { days: n(days), bonus: n(bonus) }),
+      `${window.location.origin}/register?ref=${referralCode}`,
+    ].join("\n");
     try {
       const r = await shareImage(picture.blob, `niyamawali-badge-${badge.code}.png`, text);
       if (r === "downloaded") setNote(t.badge.saved);
