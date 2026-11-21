@@ -70,12 +70,18 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
 - **Today** screen: tap a niyam to turn it green. #12 is a one-of-four choice (Biyasana 30 / Ekasana 40 / Ayambil 50 /
   Upvas 60), #6 is a gatha counter (× 20 points). Day total and month total update instantly; saving happens in the
   background and works offline (changes sync when the phone is back online).
-- Students can edit **today and the previous N−1 days** (N = *Edit window* in Settings, default 3).
+- **Submit & lock:** a student can change today and the previous N−1 days (N = *Edit window* in Settings, default 3) until they tap
+  **Submit day** and confirm. A submitted day is **locked**: only an admin unlock can reopen it. Everyone has a unique
+  **Student ID** like `26-00001` (joining year + running number), shown on the Today and Profile screens so they can quote it to the admin.
+- **Rankings are admin-only.** Students see only their own points. Once a month has ended, the admin shares the result
+  (see below) and students open the link to see the top 3, their own points and rank, and a button for their certificate.
 - **Referral:** Profile → Invite friends. Shares a link like `/register?ref=ABC123` (WhatsApp / share sheet / copy).
   The new student sees “Invited by ‹name›”. Once the new student has logged on 3 different days, **both** get 100
   bonus points (amount and days are admin settings).
 - **Gamification:** day streak 🪔 with milestone bonuses (7/21/51/108 days → 50/100/200/500 points by default),
-  9 badges, monthly leaderboard with podium, and a shareable **monthly certificate** (PNG) once a month has ended.
+  9 badges (tap a badge to open it and share it on WhatsApp), and a shareable **monthly certificate** (PNG) once a month has ended.
+- **Printable sheet:** Profile → *Printable niyam sheet*: pick a month and a period (full month, days 1–15, day 16–end) and
+  download a one-page A4 landscape **PDF** or **Excel** file with the niyam list, day columns, total row and signature lines.
 
 **Admin (`/admin`)**
 - **Dashboard:** students, active today / this month, points, referrals, daily-activity chart, registrations per month,
@@ -89,7 +95,12 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
   to re-score what students already logged (do this once when you replace the placeholder 10 points).
 - **Donors:** sponsor for a month (name, optional photo, Gujarati/English message) – shown on every student’s home,
   at the top of the leaderboard and on certificates.
-- **Leaderboard**, **Settings** (edit window, referral bonus/unlock days, streak bonuses), **Admins** (add teachers,
+- **Unlock edits** (for boarding / hostel students and corrections): search by **Student ID** (or name / phone), choose how many past
+  days to unlock (default 15, today counts as day 1) and for how many hours (default 24), add a note, and the student can change those
+  days — even submitted ones — until the time is up. Active unlocks are listed and can be locked again at any time. Defaults are in Settings.
+- **Leaderboard** (admin-only rankings): for a finished month, *Share on WhatsApp* sends a picture of the top 3 (photos + names) with a
+  message and a link to `/results/YYYY-MM`; *Download picture* and *Copy message* are there for desktops.
+- **Settings** (edit window, referral bonus/unlock days, streak bonuses), **Admins** (add teachers,
   change password).
 
 **Privacy & safety**
@@ -112,3 +123,23 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
 | `src/i18n/` | English + Gujarati text |
 | `supabase/migrations`, `supabase/seed.sql` | Database schema and the 30 niyams |
 | `public/sw.js` | Service worker (offline page + asset caching) |
+
+---
+
+## 5. Boarding / hostel students
+
+Students who have no phone on weekdays fill a printed sheet at the hostel and send it home every 10–15 days:
+1. Parents print the sheet from the app (Profile → *Printable niyam sheet*), or you print it from the same page.
+2. When the filled sheet comes back, the parents call you with the child's **Student ID**.
+3. In the admin panel open **Unlock edits**, search the ID, and unlock the last 15 days for 24 hours (change the numbers if needed).
+4. The parents log in with the child's number and PIN, open each day from the day chips and tick the niyams, then tap **Submit day** on each.
+
+## 6. Updating an existing deployment
+
+Version 2 adds database tables and the Student ID column. **Run the migration before the new code goes live:**
+
+```powershell
+npm run db:migrate
+```
+
+It is safe to run repeatedly. Existing students are numbered in the order they joined (e.g. `26-00001`).

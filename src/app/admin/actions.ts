@@ -10,7 +10,8 @@ import {
 import { deletePhoto, savePhoto } from "@/lib/storage";
 import { saveSettings } from "@/lib/settings";
 import { parseStreakBonuses } from "@/lib/streaks";
-import { todayIST, isValidMonth } from "@/lib/dates";
+import { todayIST, isValidMonth, fmtIST } from "@/lib/dates";
+import { grantEdit, revokeGrant } from "@/lib/grants";
 
 export interface ActionState { error?: string; ok?: string; pin?: string }
 
@@ -194,9 +195,13 @@ export async function saveSettingsAction(_prev: ActionState | null, fd: FormData
   const bonus = int(fd, "referral_bonus");
   const unlock = int(fd, "referral_unlock_days");
   const streaks = s(fd, "streak_bonuses", 200);
+  const gDays = int(fd, "grant_default_days");
+  const gHours = int(fd, "grant_default_hours");
   if (edit < 1 || edit > 31) return { error: "Edit window must be between 1 and 31 days." };
   if (bonus < 0) return { error: "Referral bonus cannot be negative." };
   if (unlock < 1) return { error: "Referral unlock must be at least 1 day." };
+  if (gDays < 1 || gDays > 62) return { error: "Default unlock days must be between 1 and 62." };
+  if (gHours < 1 || gHours > 720) return { error: "Default unlock hours must be between 1 and 720." };
   const parsed = parseStreakBonuses(streaks);
   if (streaks && !parsed.length) return { error: "Streak bonuses look like 7:50,21:100 (days:points, comma separated)." };
   await saveSettings({
@@ -204,6 +209,8 @@ export async function saveSettingsAction(_prev: ActionState | null, fd: FormData
     referral_bonus: String(bonus),
     referral_unlock_days: String(unlock),
     streak_bonuses: parsed.map((b) => `${b.days}:${b.points}`).join(","),
+    grant_default_days: String(gDays),
+    grant_default_hours: String(gHours),
   });
   revalidatePath("/admin/settings");
   return { ok: "Settings saved." };
@@ -241,4 +248,45 @@ export async function changeOwnPassword(_prev: ActionState | null, fd: FormData)
   if (next.length < 8) return { error: "New password must be at least 8 characters." };
   await query("update admins set password_hash = $2 where id = $1", [me.id, await hashPassword(next)]);
   return { ok: "Password changed." };
+}
+
+/* ---------------- edit unlocks (boarding / hostel students, corrections) ---------------- */
+
+/** Only ever send the admin back to another admin page. */
+function backPath(fd: FormData) {
+  const b = String(fd.get("back") ?? "");
+  return b.startsWith("/admin") && !b.startsWith("//") ? b : "/admin/unlock";
+}
+function withMsg(path: string, key: "ok" | "err", msg: string) {
+  const u = new URL(path, "http://local");
+  u.searchParams.delete("ok");
+  u.searchParams.delete("err");
+  u.searchParams.set(key, msg);
+  return u.pathname + u.search;
+}
+
+export async function grantEditAction(fd: FormData) {
+  const admin = await requireAdmin();
+  const back = backPath(fd);
+  const id = s(fd, "id", 40);
+  const days = int(fd, "days");
+  const hours = int(fd, "hours");
+  if (days < 1 || days > 62) redirect(withMsg(back, "err", "Days must be between 1 and 62."));
+  if (hours < 1 || hours > 720) redirect(withMsg(back, "err", "Hours must be between 1 and 720."));
+  const st = /^[0-9a-f-]{36}$/i.test(id)
+    ? await one<{ student_code: string; first_name: string }>("select student_code, first_name from students where id = $1", [id])
+    : null;
+  if (!st) redirect(withMsg(back, "err", "Student not found."));
+  const g = await grantEdit({ studentId: id, daysBack: days, hours, adminId: admin.id, note: s(fd, "note", 200) });
+  revalidatePath("/admin/unlock");
+  revalidatePath(`/admin/students/${id}`);
+  redirect(withMsg(back, "ok", `Unlocked ${st!.student_code} (${st!.first_name}) – last ${g.daysBack} days, until ${fmtIST(new Date(g.expires_at).toISOString())}.`));
+}
+
+export async function revokeGrantAction(fd: FormData) {
+  await requireAdmin();
+  const back = backPath(fd);
+  await revokeGrant(int(fd, "grantId"));
+  revalidatePath("/admin/unlock");
+  redirect(withMsg(back, "ok", "Unlock removed. The days are locked again."));
 }

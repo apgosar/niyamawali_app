@@ -7,18 +7,20 @@ interface Props {
   options: OptionDef[];
   value: number; // 0 = not done
   onChange: (value: number) => void;
+  /** The day is submitted / outside the edit window: show the state but do not allow changes. */
+  locked?: boolean;
 }
 
 const check = (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
 );
 
-export function NiyamCard({ niyam, options, value, onChange }: Props) {
+export function NiyamCard({ niyam, options, value, onChange, locked = false }: Props) {
   const { lang, t, n, f } = useI18n();
   const name = lang === "gu" ? niyam.name_gu : niyam.name_en;
   const done = value > 0;
   const shell = `rounded-2xl border-2 p-3 transition-all duration-200 ${
-    done ? "border-sage-500 bg-sage-50 shadow-glow" : "border-gold-100 bg-ivory shadow-soft"}`;
+    done ? "border-sage-500 bg-sage-50 shadow-glow" : "border-gold-100 bg-ivory shadow-soft"} ${locked && !done ? "opacity-60" : ""}`;
   const badge = (
     <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
       done ? "bg-sage-500 text-white" : "bg-gold-100 text-gold-700"}`}>
@@ -28,8 +30,8 @@ export function NiyamCard({ niyam, options, value, onChange }: Props) {
 
   if (niyam.type === "boolean") {
     return (
-      <button type="button" role="switch" aria-checked={done} onClick={() => onChange(done ? 0 : 1)}
-        className={`${shell} flex w-full items-start gap-3 text-left active:scale-[.985] ${done ? "pop" : ""}`}>
+      <button type="button" role="switch" aria-checked={done} disabled={locked} onClick={() => onChange(done ? 0 : 1)}
+        className={`${shell} flex w-full items-start gap-3 text-left ${locked ? "cursor-not-allowed" : `active:scale-[.985] ${done ? "pop" : ""}`}`}>
         {badge}
         <span className={`flex-1 text-[15px] font-medium leading-snug ${done ? "text-sage-700" : "text-ink"}`}>{name}</span>
         <span className={`mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${done ? "bg-sage-500 text-white" : "bg-gold-50 text-gold-600"}`}>+{n(niyam.points)}</span>
@@ -49,8 +51,8 @@ export function NiyamCard({ niyam, options, value, onChange }: Props) {
           {opts.map((o) => {
             const sel = value === o.id;
             return (
-              <button key={o.id} type="button" role="radio" aria-checked={sel} onClick={() => onChange(sel ? 0 : o.id)}
-                className={`flex min-h-12 items-center justify-between gap-2 rounded-xl border-2 px-3 py-2 text-sm font-semibold transition active:scale-95 ${
+              <button key={o.id} type="button" role="radio" aria-checked={sel} disabled={locked} onClick={() => onChange(sel ? 0 : o.id)}
+                className={`flex min-h-12 items-center justify-between gap-2 rounded-xl border-2 px-3 py-2 text-sm font-semibold transition ${locked ? "cursor-not-allowed" : "active:scale-95"} ${
                   sel ? "border-sage-500 bg-sage-500 text-white" : "border-gold-100 bg-white text-ink"}`}>
                 <span>{lang === "gu" ? o.label_gu : o.label_en}</span>
                 <span className={`text-xs ${sel ? "text-white/90" : "text-gold-600"}`}>+{n(o.points)}</span>
@@ -75,12 +77,12 @@ export function NiyamCard({ niyam, options, value, onChange }: Props) {
       <div className="mt-3 flex items-center justify-between rounded-xl bg-white/70 p-2">
         <span className="pl-1 text-xs text-muted">{f(t.today.perGatha, { n: n(niyam.points_per_unit) })}</span>
         <div className="flex items-center gap-3">
-          <button type="button" aria-label="−" className={`${btn} border-gold-300 text-gold-700`} disabled={value <= 0} onClick={dec}>−</button>
+          <button type="button" aria-label="−" className={`${btn} border-gold-300 text-gold-700`} disabled={locked || value <= 0} onClick={dec}>−</button>
           <span aria-live="polite" className="min-w-14 text-center">
             <span className="num text-3xl text-gold-900">{n(value)}</span>
             <span className="block text-[11px] leading-none text-muted">{t.today.gathas}</span>
           </span>
-          <button type="button" aria-label="+" className={`${btn} border-sage-500 bg-sage-500 text-white`} disabled={value >= niyam.max_count} onClick={inc}>+</button>
+          <button type="button" aria-label="+" className={`${btn} border-sage-500 bg-sage-500 text-white`} disabled={locked || value >= niyam.max_count} onClick={inc}>+</button>
         </div>
         <span className={`min-w-12 pr-1 text-right text-sm font-bold ${done ? "text-sage-700" : "text-muted"}`}>+{n(value * niyam.points_per_unit)}</span>
       </div>

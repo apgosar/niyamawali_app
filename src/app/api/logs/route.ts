@@ -1,24 +1,23 @@
 import { NextResponse } from "next/server";
 import { getStudent } from "@/lib/auth";
-import { getDayEntries, getTotals, LogError, saveEntry } from "@/lib/logs";
-import { isEditable, isValidYmd, todayIST } from "@/lib/dates";
-import { getSettings } from "@/lib/settings";
+import { getAccess, getDayEntries, getTotals, LogError, saveEntry } from "@/lib/logs";
+import { isValidYmd, todayIST } from "@/lib/dates";
 
-/** Entries + totals for one day (used when the student switches day chips). */
+/** Entries + totals + who-may-edit for the chosen day (used when the student switches day chips). */
 export async function GET(req: Request) {
   const student = await getStudent();
   if (!student) return NextResponse.json({ error: "auth" }, { status: 401 });
   const date = new URL(req.url).searchParams.get("date") ?? todayIST();
   if (!isValidYmd(date)) return NextResponse.json({ error: "bad_date" }, { status: 400 });
-  const [entries, totals, settings] = await Promise.all([
+  const [entries, totals, access] = await Promise.all([
     getDayEntries(student.id, date),
     getTotals(student.id, date),
-    getSettings(),
+    getAccess(student.id),
   ]);
-  return NextResponse.json({ entries, totals, editable: isEditable(date, todayIST(), settings.editWindowDays) });
+  return NextResponse.json({ entries, totals, access });
 }
 
-/** Save one niyam. value = 0 clears it. */
+/** Save one niyam. value = 0 clears it. Rejected (403) when the day is locked. */
 export async function POST(req: Request) {
   const student = await getStudent();
   if (!student) return NextResponse.json({ error: "auth" }, { status: 401 });

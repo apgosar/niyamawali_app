@@ -58,6 +58,13 @@ export function isEditable(date: string, today: string, windowDays: number): boo
   return back >= 0 && back < Math.max(1, windowDays);
 }
 
+/** "21 Nov, 11:25 am" in India time, from an ISO timestamp. */
+export function fmtIST(iso: string, lang: "en" | "gu" = "en"): string {
+  return new Date(iso).toLocaleString(lang === "gu" ? "gu-IN" : "en-IN", {
+    day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: TZ,
+  });
+}
+
 export function isValidYmd(s: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
   return new Date(toUTC(s)).toISOString().slice(0, 10) === s;

@@ -12,7 +12,7 @@ export const en = {
   },
   login: {
     title: "Welcome back", subtitle: "Log in with your phone number and PIN",
-    phone: "Mobile number", phoneHint: "Father's, mother's or your own number", pin: "4-digit PIN",
+    phone: "Mobile number", phoneHint: "Use any ONE number you gave when you registered: your mother's, father's or your own.", pin: "4-digit PIN",
     button: "Log in", forgot: "Forgot your PIN? Please ask your Shibir admin to reset it.",
     newStudent: "New student?", register: "Register here",
     wrong: "Phone number or PIN is not correct.",
@@ -52,7 +52,7 @@ export const en = {
   today: {
     dayTotal: "Today's points", monthTotal: "This month", streak: "Day streak", streakNudge: "Log a niyam today to keep your streak alive 🪔",
     saved: "Saved ✓", saving: "Saving…", queued: "Will sync when online", locked: "This day is locked",
-    editHint: "You can edit today and the last {n} days only.", todayLabel: "Today", yesterday: "Yesterday",
+    editHint: "You can edit today and the last {n} days until you submit a day. A submitted day is locked.", todayLabel: "Today", yesterday: "Yesterday",
     gathas: "gathas", perGatha: "× {n} each", hello: "Jai Jinendra", newBadge: "New badge: {name}", bonus: "Bonus +{n} points!",
     sponsored: "Sponsored by", top: "Back to top", total: "Today", editing: "Editing", noNiyams: "No niyams are set up yet.",
     dayPoints: "{n} points today",
@@ -79,6 +79,40 @@ export const en = {
     memberSince: "Member since {date}", saved: "Saved",
   },
   stats: { streak: "Streak", points: "Points" },
+  lock: {
+    submitDay: "Submit day",
+    submitHelp: "When you have ticked everything for this day, submit it. After that the day is locked.",
+    submitNeedOne: "Tick at least one niyam to submit this day.",
+    confirmTitle: "Submit this day?",
+    confirmBody: "{date} · {pts} points. After you submit, you cannot change it without the admin.",
+    confirmYes: "Yes, submit", confirmNo: "Not yet",
+    submitting: "Submitting…", submittedOn: "✓ Submitted on {when}", submittedToast: "Day submitted ✓",
+    lockedNote: "🔒 This day is locked. To change it, ask the admin to unlock it and tell them your Student ID: {id}",
+    unlockedUntil: "🔓 The admin has unlocked editing until {time}.",
+    offlineSubmit: "You are offline. Connect to the internet and try again.",
+    studentId: "Student ID", lockedShort: "Locked",
+  },
+  results: {
+    title: "{month} results", top3: "Top 3 of the month", yourResult: "Your result", points: "Your points", rank: "Your rank",
+    rankOf: "of {total}", noPoints: "You have no points in this month.", notClosed: "Results will be available after the month ends.",
+    certificate: "Generate my certificate", home: "Back to home", empty: "No results for this month yet.",
+  },
+  badge: {
+    share: "Share on WhatsApp", earnedOn: "Earned on {date}", notEarned: "Not earned yet – keep going!", close: "Close",
+    shareText: "I earned the “{name}” badge on Niyamawali – Divine Sanskar Shibir! 🏅 {desc}",
+    saved: "Image saved. Attach it to your WhatsApp message.",
+  },
+  sheet: {
+    menu: "Printable niyam sheet", menuHelp: "Print it, fill it every day, then enter it in the app.",
+    title: "Printable niyam sheet", help: "For students without a phone (for example in a hostel): print this sheet, fill it every day, and enter it in the app later. For days older than the edit window, ask the admin to unlock editing.",
+    month: "Month", period: "Period", full: "Full month", first: "Days 1–15", second: "Day 16 – end of month",
+    pdf: "Download PDF", excel: "Download Excel", preparing: "Preparing…", failed: "Could not create the file. Please try again.",
+    sheetTitle: "Daily niyam sheet", niyam: "Niyam", points: "Pts", total: "Total",
+    legendTick: "Tick (✓) each niyam you did.", legendCount: "Write the number of gathas.", legendChoice: "Write the letter: {opts}.",
+    signStudent: "Student", signWarden: "Warden", signParent: "Parent",
+    footer: "Enter these in the Niyamawali app. For older days, ask the admin to unlock editing and quote Student ID {id}.",
+    each: "each",
+  },
 } as const;
 
 type Widen<T> = T extends string ? string : { [K in keyof T]: Widen<T[K]> };

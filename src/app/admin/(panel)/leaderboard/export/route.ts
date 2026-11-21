@@ -9,6 +9,6 @@ export async function GET(req: Request) {
   const m = new URL(req.url).searchParams.get("month") ?? "";
   const month = isValidMonth(m) ? m : monthOf(todayIST());
   const rows = await monthlyLeaderboard(month, 100000);
-  const csv = toCsv([["Rank", "First name", "Surname", "Sangh", "Points"], ...rows.map((r) => [r.rank, r.first_name, r.surname, r.sangh, r.points])]);
+  const csv = toCsv([["Rank", "Student ID", "First name", "Surname", "Sangh", "Points"], ...rows.map((r) => [r.rank, r.student_code, r.first_name, r.surname, r.sangh, r.points])]);
   return new NextResponse(csv, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="leaderboard_${month}.csv"` } });
 }

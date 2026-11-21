@@ -93,6 +93,16 @@ export function SettingsForm({ values }: { values: Record<string, string> }) {
       <div><label className="label" htmlFor="streak_bonuses">Streak bonuses</label>
         <input id="streak_bonuses" name="streak_bonuses" defaultValue={values.streak_bonuses} className="field" placeholder="7:50,21:100,51:200,108:500" />
         <p className="hint">days:points pairs, comma separated. Each is paid once per student. Leave empty to disable.</p></div>
+      <div className="rounded-2xl border border-gold-100 bg-gold-50 p-3">
+        <p className="mb-2 text-sm font-bold text-gold-700">Default for “Unlock editing”</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="label" htmlFor="grant_default_days">Days to unlock</label>
+            <input id="grant_default_days" name="grant_default_days" type="number" min={1} max={62} defaultValue={values.grant_default_days} className="field" /></div>
+          <div><label className="label" htmlFor="grant_default_hours">Open for (hours)</label>
+            <input id="grant_default_hours" name="grant_default_hours" type="number" min={1} max={720} defaultValue={values.grant_default_hours} className="field" /></div>
+        </div>
+        <p className="hint">Pre-filled on the Unlock page; you can change it for each request.</p>
+      </div>
       <Msg s={state} />
       <button className="btn btn-gold" disabled={pending}>{pending ? "Saving…" : "Save settings"}</button>
     </form>

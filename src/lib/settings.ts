@@ -6,6 +6,8 @@ export interface AppSettings {
   referralBonus: number;
   referralUnlockDays: number;
   streakBonuses: StreakBonus[];
+  grantDefaultDays: number;
+  grantDefaultHours: number;
   raw: Record<string, string>;
 }
 
@@ -14,6 +16,8 @@ const DEFAULTS: Record<string, string> = {
   referral_bonus: "100",
   referral_unlock_days: "3",
   streak_bonuses: "7:50,21:100,51:200,108:500",
+  grant_default_days: "15",
+  grant_default_hours: "24",
 };
 
 const posInt = (v: string, fallback: number) => {
@@ -29,6 +33,8 @@ export async function getSettings(): Promise<AppSettings> {
     referralBonus: posInt(raw.referral_bonus, 100),
     referralUnlockDays: Math.max(1, posInt(raw.referral_unlock_days, 3)),
     streakBonuses: parseStreakBonuses(raw.streak_bonuses),
+    grantDefaultDays: Math.min(62, Math.max(1, posInt(raw.grant_default_days, 15))),
+    grantDefaultHours: Math.min(720, Math.max(1, posInt(raw.grant_default_hours, 24))),
     raw,
   };
 }

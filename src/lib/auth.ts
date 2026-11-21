@@ -67,6 +67,7 @@ export interface Student {
   residence: string;
   sangh: string;
   referral_code: string;
+  student_code: string;
   must_change_pin: boolean;
   created_at: string;
 }
@@ -97,7 +98,7 @@ export const getStudent = cache(async (): Promise<Student | null> => {
   try {
     const { payload } = await jwtVerify(token, secret());
     const s = await one<Student & { session_version: number; active: boolean }>(
-      `select id, first_name, surname, photo_key, dob::text as dob, village, residence, sangh, referral_code,
+      `select id, first_name, surname, photo_key, dob::text as dob, village, residence, sangh, referral_code, student_code,
               must_change_pin, created_at::text as created_at, session_version, active
          from students where id = $1`,
       [payload.sid],
@@ -168,10 +169,10 @@ export const hashPassword = (pw: string) => bcrypt.hash(pw, 10);
 export const verifyPassword = (pw: string, hash: string) => bcrypt.compare(pw, hash);
 
 /** Use at the top of every student page (layouts do NOT block the page from rendering). */
-export async function requireStudent(): Promise<Student> {
+export async function requireStudent(next?: string): Promise<Student> {
   const { redirect } = await import("next/navigation");
   const s = await getStudent();
-  if (!s) redirect("/login");
+  if (!s) redirect(next ? `/login?next=${encodeURIComponent(next)}` : "/login");
   if (s!.must_change_pin) redirect("/change-pin");
   return s!;
 }

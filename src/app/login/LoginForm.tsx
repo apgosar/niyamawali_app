@@ -8,7 +8,7 @@ import { Avatar } from "@/components/Avatar";
 
 interface Pick { id: string; name: string; photo: string }
 
-export function LoginForm() {
+export function LoginForm({ next = "/" }: { next?: string }) {
   const { t } = useI18n();
   const router = useRouter();
   const [phone, setPhone] = useState("");
@@ -29,7 +29,7 @@ export function LoginForm() {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, pin: code }),
       });
       const data = await res.json();
-      if (res.ok && data.ok) { window.location.assign("/"); return; }
+      if (res.ok && data.ok) { window.location.assign(next); return; }
       if (res.ok && data.pick) { setPick({ list: data.pick, token: data.token }); return; }
       if (data.error === "notRegistered") {
         setNotice(t.login.notRegistered);
@@ -49,7 +49,7 @@ export function LoginForm() {
     const res = await fetch("/api/auth/pick", {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: pick!.token, studentId: id }),
     });
-    if (res.ok) window.location.assign("/");
+    if (res.ok) window.location.assign(next);
     else { setPick(null); setPin(""); setError(t.common.somethingWrong); setBusy(false); }
   }
 
@@ -79,10 +79,11 @@ export function LoginForm() {
         <h2 className="text-center text-xl font-semibold text-gold-700">{t.login.title}</h2>
         <p className="mb-4 text-center text-sm text-muted">{t.login.subtitle}</p>
 
+        <p className="mb-3 rounded-xl border border-gold-300 bg-gold-50 p-3 text-sm font-semibold leading-snug text-gold-700">📱 {t.login.phoneHint}</p>
+
         <label className="label" htmlFor="phone">{t.login.phone}</label>
         <input id="phone" className="field text-lg tracking-wide" type="tel" inputMode="numeric" autoComplete="tel"
           placeholder="98200 12345" value={phone} onChange={(e) => { setPhone(e.target.value); setError(null); }} />
-        <p className="hint">{t.login.phoneHint}</p>
 
         <p className="label mt-5 text-center">{t.login.pin}</p>
         <PinPad value={pin} disabled={busy} invalid={!!error}

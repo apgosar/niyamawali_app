@@ -5,7 +5,6 @@ import { useI18n } from "./I18nProvider";
 
 const items = [
   { href: "/", key: "today", icon: "🪷" },
-  { href: "/leaderboard", key: "leaderboard", icon: "🏆" },
   { href: "/progress", key: "progress", icon: "📈" },
   { href: "/profile", key: "profile", icon: "👤" },
 ] as const;
@@ -15,7 +14,7 @@ export function BottomNav() {
   const { t } = useI18n();
   return (
     <nav aria-label="Main" className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-gold-100 bg-ivory/95 backdrop-blur">
-      <ul className="mx-auto grid max-w-md grid-cols-4">
+      <ul className="mx-auto grid max-w-md grid-cols-3">
         {items.map((it) => {
           const active = it.href === "/" ? path === "/" : path.startsWith(it.href);
           return (

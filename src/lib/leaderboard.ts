@@ -4,6 +4,7 @@ import { monthRange } from "./dates";
 
 export interface LeaderRow {
   id: string;
+  student_code: string;
   first_name: string;
   surname: string;
   photo_key: string;
@@ -23,7 +24,7 @@ export async function monthlyLeaderboard(month: string, limit = 100): Promise<Le
           select student_id, points as p from bonus_points where awarded_on >= $1 and awarded_on < $2
         ) x group by student_id
      ), ranked as (
-        select s.id, s.first_name, s.surname, s.photo_key, s.sangh, pts.points,
+        select s.id, s.student_code, s.first_name, s.surname, s.photo_key, s.sangh, pts.points,
                rank() over (order by pts.points desc)::int as rank
           from pts join students s on s.id = pts.student_id
          where s.active and pts.points > 0

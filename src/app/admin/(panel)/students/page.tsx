@@ -30,7 +30,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
           <div><label className="label" htmlFor="to">To month</label><input id="to" type="month" name="to" defaultValue={f.to} className="field" /></div>
           <div><label className="label" htmlFor="min">Min points in range</label><input id="min" type="number" name="min" defaultValue={f.minPoints} className="field" placeholder="e.g. 2000" /></div>
           <div><label className="label" htmlFor="max">Max points in range</label><input id="max" type="number" name="max" defaultValue={f.maxPoints} className="field" /></div>
-          <div><label className="label" htmlFor="q">Search name / phone / code</label><input id="q" name="q" defaultValue={f.q} className="field" /></div>
+          <div><label className="label" htmlFor="q">Search ID / name / phone</label><input id="q" name="q" defaultValue={f.q} className="field" /></div>
           <div><label className="label" htmlFor="sangh">Sangh</label><input id="sangh" name="sangh" defaultValue={f.sangh} className="field" /></div>
           <div><label className="label" htmlFor="residence">Residence</label><input id="residence" name="residence" defaultValue={f.residence} className="field" /></div>
           <div><label className="label" htmlFor="village">Village</label><input id="village" name="village" defaultValue={f.village} className="field" /></div>
@@ -53,9 +53,10 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
       <p className="text-sm text-muted"><b>{total}</b> student{total === 1 ? "" : "s"} · points counted for <b>{range}</b> (daily logs + bonuses)</p>
 
       <div className="card overflow-x-auto">
-        <table className="w-full min-w-[56rem] text-left text-sm">
+        <table className="w-full min-w-[60rem] text-left text-sm">
           <thead className="bg-gold-50 text-xs uppercase tracking-wide text-gold-700">
             <tr>
+              <th className="p-3"><Link href={sortLink("id")}>ID{arrow("id")}</Link></th>
               <th className="p-3"><Link href={sortLink("name")}>Student{arrow("name")}</Link></th>
               <th className="p-3"><Link href={sortLink("age")}>Age{arrow("age")}</Link></th>
               <th className="p-3"><Link href={sortLink("sangh")}>Sangh{arrow("sangh")}</Link></th>
@@ -69,6 +70,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
           <tbody className="divide-y divide-gold-100">
             {rows.map((r) => (
               <tr key={r.id} className={r.active ? "" : "opacity-50"}>
+                <td className="p-3 num text-sm text-muted">{r.student_code}</td>
                 <td className="p-3">
                   <Link href={`/admin/students/${r.id}`} className="flex items-center gap-2 font-semibold text-gold-700 hover:underline">
                     <Avatar photoKey={r.photo_key} name={`${r.first_name} ${r.surname}`} size={34} />
@@ -84,7 +86,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
                 <td className="p-3 text-right num text-lg text-gold-900">{r.points}</td>
               </tr>
             ))}
-            {rows.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-muted">No students match these filters.</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={9} className="p-8 text-center text-muted">No students match these filters.</td></tr>}
           </tbody>
         </table>
       </div>

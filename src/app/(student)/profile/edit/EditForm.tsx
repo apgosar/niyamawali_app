@@ -46,10 +46,10 @@ export function EditForm({ initial, photoKey }: { initial: Record<string, string
     <form onSubmit={save} className="card space-y-4 p-5">
       <div className="flex justify-center"><PhotoPicker existingUrl={`/api/photo/${photoKey}`} onChange={setPhoto} /></div>
       {errors.parent && <p role="alert" className="err">{msg(errors.parent)}</p>}
-      <Field k="father_name" label={r.fatherName}>{input("father_name")}</Field>
-      <Field k="father_phone" label={r.fatherPhone} error={msg(errors.father_phone)}>{input("father_phone", { type: "tel", inputMode: "numeric" })}</Field>
       <Field k="mother_name" label={r.motherName}>{input("mother_name")}</Field>
       <Field k="mother_phone" label={r.motherPhone} error={msg(errors.mother_phone)}>{input("mother_phone", { type: "tel", inputMode: "numeric" })}</Field>
+      <Field k="father_name" label={r.fatherName}>{input("father_name")}</Field>
+      <Field k="father_phone" label={r.fatherPhone} error={msg(errors.father_phone)}>{input("father_phone", { type: "tel", inputMode: "numeric" })}</Field>
       <Field k="own_phone" label={`${r.ownPhone} (${t.common.optional})`} error={msg(errors.own_phone)}>{input("own_phone", { type: "tel", inputMode: "numeric" })}</Field>
       <Field k="village" label={r.village} error={msg(errors.village)}>{input("village")}</Field>
       <Field k="residence" label={r.residence} error={msg(errors.residence)}>{input("residence")}</Field>

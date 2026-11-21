@@ -180,10 +180,10 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
           <>
             <p className="rounded-xl bg-gold-50 p-3 text-sm text-gold-700">{r.parentRule}</p>
             {errors.parent && <p role="alert" className="err">{msg(errors.parent)}</p>}
-            <Field k="father_name" error={msg(errors.father_name)} label={r.fatherName}>{text("father_name", { autoCapitalize: "words" })}</Field>
-            <Field k="father_phone" error={msg(errors.father_phone)} label={r.fatherPhone}>{text("father_phone", { type: "tel", inputMode: "numeric" })}</Field>
             <Field k="mother_name" error={msg(errors.mother_name)} label={r.motherName}>{text("mother_name", { autoCapitalize: "words" })}</Field>
             <Field k="mother_phone" error={msg(errors.mother_phone)} label={r.motherPhone}>{text("mother_phone", { type: "tel", inputMode: "numeric" })}</Field>
+            <Field k="father_name" error={msg(errors.father_name)} label={r.fatherName}>{text("father_name", { autoCapitalize: "words" })}</Field>
+            <Field k="father_phone" error={msg(errors.father_phone)} label={r.fatherPhone}>{text("father_phone", { type: "tel", inputMode: "numeric" })}</Field>
             <Field k="own_phone" error={msg(errors.own_phone)} label={`${r.ownPhone} (${t.common.optional})`}>{text("own_phone", { type: "tel", inputMode: "numeric" })}</Field>
           </>
         )}

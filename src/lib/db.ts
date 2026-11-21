@@ -33,7 +33,10 @@ async function createPglite(): Promise<Db> {
   if (!dir.startsWith("memory:")) fs.mkdirSync(dir, { recursive: true });
   const pg = new PGlite(dir);
   await pg.waitReady;
-  await pg.exec(readSql("supabase", "migrations", "0001_init.sql"));
+  const migDir = path.join(/*turbopackIgnore: true*/ ROOT, "supabase", "migrations");
+  for (const file of fs.readdirSync(migDir).filter((f) => f.endsWith(".sql")).sort()) {
+    await pg.exec(readSql("supabase", "migrations", file));
+  }
   await pg.exec(readSql("supabase", "seed.sql"));
   return {
     async query<T>(text: string, params: unknown[] = []) {

@@ -1,10 +1,11 @@
 import "server-only";
 import { one, query, tx, type Queryable } from "./db";
-import { addDays, isEditable, isValidYmd, monthOf, monthRange, todayIST } from "./dates";
+import { addDays, isValidYmd, monthOf, monthRange, todayIST } from "./dates";
 import { scoreEntry, type NiyamDef, type OptionDef } from "./points";
 import { computeStreak } from "./streaks";
 import { getSettings } from "./settings";
 import { BADGES } from "./badges";
+import { buildAccess, dayAccess, type AccessInfo, type GrantInfo } from "./access";
 
 export async function getNiyams(): Promise<{ niyams: NiyamDef[]; options: OptionDef[] }> {
   const niyams = await query<NiyamDef>(
@@ -71,9 +72,64 @@ export async function getTotals(studentId: string, date: string, today = todayIS
 }
 
 export class LogError extends Error {
-  constructor(public code: "bad_date" | "locked" | "bad_niyam" | "bad_value") {
+  constructor(public code: "bad_date" | "locked" | "bad_niyam" | "bad_value" | "empty") {
     super(code);
   }
+}
+
+/* ---------------- who may edit which day ---------------- */
+
+/** The student's current admin unlock, if any (only one is kept active at a time). */
+export async function getActiveGrant(studentId: string): Promise<GrantInfo | null> {
+  const g = await one<{ id: number; days_back: number; expires_at: Date | string }>(
+    `select id, days_back, expires_at from edit_grants
+      where student_id = $1 and revoked_at is null and expires_at > now()
+      order by days_back desc, expires_at desc limit 1`,
+    [studentId],
+  );
+  return g ? { id: g.id, days_back: g.days_back, expires_at: new Date(g.expires_at).toISOString() } : null;
+}
+
+export async function getAccess(studentId: string, today = todayIST()): Promise<AccessInfo> {
+  const [settings, grant, subs] = await Promise.all([
+    getSettings(),
+    getActiveGrant(studentId),
+    query<{ d: string; at: Date | string }>(
+      `select log_date::text as d, submitted_at as at from daily_submissions
+        where student_id = $1 and log_date > $2`,
+      [studentId, addDays(today, -70)],
+    ),
+  ]);
+  return buildAccess(today, settings.editWindowDays, grant, new Map(subs.map((r) => [r.d, new Date(r.at).toISOString()])));
+}
+
+export async function getEditState(studentId: string, date: string, today = todayIST()) {
+  const [settings, grant, sub] = await Promise.all([
+    getSettings(),
+    getActiveGrant(studentId),
+    one("select 1 from daily_submissions where student_id = $1 and log_date = $2", [studentId, date]),
+  ]);
+  return { submitted: !!sub, ...dayAccess(date, today, settings.editWindowDays, grant?.days_back ?? null, !!sub) };
+}
+
+/** The student finishes a day: from now on only an admin unlock can change it. */
+export async function submitDay(studentId: string, date: string): Promise<AccessInfo> {
+  if (!isValidYmd(date)) throw new LogError("bad_date");
+  const today = todayIST();
+  const st = await getEditState(studentId, date, today);
+  if (!st.submitted) {
+    if (!st.editable) throw new LogError("locked");
+    const n = await one<{ n: number }>(
+      "select count(*)::int as n from daily_logs where student_id = $1 and log_date = $2",
+      [studentId, date],
+    );
+    if (!n || n.n === 0) throw new LogError("empty");
+    await query(
+      "insert into daily_submissions (student_id, log_date) values ($1, $2) on conflict do nothing",
+      [studentId, date],
+    );
+  }
+  return getAccess(studentId, today);
 }
 
 export interface SaveResult extends Totals {
@@ -89,7 +145,7 @@ export async function saveEntry(studentId: string, date: string, niyamId: number
   if (!isValidYmd(date)) throw new LogError("bad_date");
   const today = todayIST();
   const settings = await getSettings();
-  if (!isEditable(date, today, settings.editWindowDays)) throw new LogError("locked");
+  if (!(await getEditState(studentId, date, today)).editable) throw new LogError("locked");
 
   const { niyams, options } = await getNiyams();
   const niyam = niyams.find((n) => n.id === niyamId);

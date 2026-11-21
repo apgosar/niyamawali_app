@@ -114,6 +114,7 @@ export interface StudentFilters {
 
 export interface StudentRow {
   id: string;
+  student_code: string;
   first_name: string;
   surname: string;
   photo_key: string;
@@ -137,6 +138,7 @@ export interface StudentRow {
 }
 
 const SORTS: Record<string, string> = {
+  id: "s.student_code",
   name: "lower(s.first_name), lower(s.surname)",
   points: "points",
   age: "s.dob",
@@ -169,8 +171,8 @@ export async function queryStudents(f: StudentFilters, opts: { limit?: number; o
     const digits = f.q.replace(/\D/g, "");
     const phoneLike = digits.length >= 3 ? p(`%${digits}%`) : null;
     where.push(
-      `(s.first_name || ' ' || s.surname ilike ${like} or s.referral_code ilike ${like}` +
-        (phoneLike ? ` or s.father_phone like ${phoneLike} or s.mother_phone like ${phoneLike} or s.own_phone like ${phoneLike}` : "") +
+      `(s.first_name || ' ' || s.surname ilike ${like} or s.referral_code ilike ${like} or s.student_code ilike ${like}` +
+        (phoneLike ? ` or s.father_phone like ${phoneLike} or s.mother_phone like ${phoneLike} or s.own_phone like ${phoneLike} or replace(s.student_code, '-', '') like ${phoneLike}` : "") +
         ")",
     );
   }
@@ -190,7 +192,7 @@ export async function queryStudents(f: StudentFilters, opts: { limit?: number; o
         select student_id, count(distinct log_date)::int as n from daily_logs
          where log_date >= $1 and log_date < $2 group by student_id
      )
-     select s.id, s.first_name, s.surname, s.photo_key, s.dob::text as dob, s.village, s.residence, s.sangh,
+     select s.id, s.student_code, s.first_name, s.surname, s.photo_key, s.dob::text as dob, s.village, s.residence, s.sangh,
             s.father_name, s.father_phone, s.mother_name, s.mother_phone, s.own_phone, s.dharmik_abhyas,
             s.pathshala, s.pathshala_name, s.active, s.created_at::text as created_at,
             coalesce(pts.points, 0)::int as points, coalesce(days.n, 0)::int as active_days,
@@ -271,7 +273,7 @@ export async function getStudentDetail(id: string) {
     [id],
   );
   if (!s) return null;
-  const [months, badges, referrals, bonuses, recent] = await Promise.all([
+  const [months, badges, referrals, bonuses, recent, submitted] = await Promise.all([
     query<{ month: string; total: number; days: number }>(
       `select month, sum(p)::int as total, count(distinct d)::int as days from (
           select to_char(log_date,'YYYY-MM') as month, points as p, log_date as d from daily_logs where student_id = $1
@@ -289,6 +291,7 @@ export async function getStudentDetail(id: string) {
         where student_id = $1 and log_date > $2 group by log_date order by log_date desc`,
       [id, addDays(todayIST(), -30)],
     ),
+    query<{ d: string }>("select log_date::text as d from daily_submissions where student_id = $1", [id]),
   ]);
-  return { s, months, badges, referrals, bonuses, recent };
+  return { s, months, badges, referrals, bonuses, recent, submitted: new Set(submitted.map((r) => r.d)) };
 }
