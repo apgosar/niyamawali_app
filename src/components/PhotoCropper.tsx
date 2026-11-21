@@ -97,7 +97,7 @@ export function PhotoCropper({ source, onDone, onCancel }: Props) {
   // Portal to <body>: an animated ancestor (transform) would otherwise become the containing block for `fixed`.
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={t.register.photoAdjust}
-      className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-y-auto bg-gold-900/80 p-4 backdrop-blur-sm">
+      className="safe-overlay fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-y-auto bg-gold-900/80 p-4 backdrop-blur-sm">
       <div className="w-full max-w-sm rounded-3xl bg-ivory p-5 shadow-xl">
         <h2 className="text-center text-xl font-bold text-gold-700">{t.register.photoAdjust}</h2>
         <p className="mb-3 mt-1 text-center text-sm text-muted">{t.register.photoAdjustHint}</p>

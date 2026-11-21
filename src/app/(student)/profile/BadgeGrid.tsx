@@ -78,7 +78,7 @@ function BadgeModal({ badge, earnedOn, studentName, referralCode, bonus, days, o
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={badge.name[lang]} onClick={onClose}
       className="fixed inset-0 z-[60] overflow-y-auto bg-gold-900/70 backdrop-blur-sm">
-     <div className="flex min-h-full items-center justify-center p-4">
+     <div className="safe-overlay flex min-h-full items-center justify-center p-4">
       <div className="fade-up w-full max-w-sm rounded-3xl bg-ivory p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="overflow-hidden rounded-2xl shadow-soft">
           <FitToWidth width={320}>

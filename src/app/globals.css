@@ -116,5 +116,19 @@ h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: 0.
 }
 
 /* Safe areas for installed PWA on notched phones */
-.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
-.safe-top { padding-top: env(safe-area-inset-top); }
+/*
+ * Safe areas: on iPhones the notch / status bar (top) and the home indicator (bottom) take extra space.
+ * --nav-h is the FULL height of the bottom tab bar, including that home-indicator space. Everything that sits
+ * above the bar (page padding, the back-to-top button, toasts) is positioned from it, so nothing is ever hidden
+ * behind the bar, on any phone.
+ */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --nav-body: 4.5rem;
+  --nav-h: calc(var(--nav-body) + var(--sab));
+}
+.safe-bottom { padding-bottom: var(--sab); }
+.safe-top { padding-top: calc(var(--sat) + 0.75rem); }
+/* Full-screen pop-ups: keep their buttons clear of the home indicator */
+.safe-overlay { padding-bottom: max(1rem, var(--sab)); }

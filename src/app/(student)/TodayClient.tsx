@@ -317,7 +317,7 @@ export function TodayClient(p: Props) {
 
       {/* ---- floating points / save bar (only while the totals card is scrolled out of view) ---- */}
       <div aria-hidden={!showBar} className={`pointer-events-none fixed inset-x-0 top-0 z-50 transition-all duration-200 ${showBar ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}>
-        <div className="mx-auto max-w-md px-3 pt-[max(env(safe-area-inset-top),0.5rem)]">
+        <div className="mx-auto max-w-md px-3 pt-[max(var(--sat),0.5rem)]">
           <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-gold-300 bg-ivory/95 px-4 py-2 shadow-lg backdrop-blur">
             <div className="flex min-w-0 flex-1 items-baseline gap-2">
               <span className="num text-3xl leading-none text-gold-600"><AnimatedNumber value={dayTotal} /></span>
@@ -333,12 +333,13 @@ export function TodayClient(p: Props) {
       </div>
 
       <button type="button" aria-label={t.today.top} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className={`fixed bottom-24 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border-2 border-gold-300 bg-ivory text-2xl font-bold text-gold-700 shadow-lg transition-all duration-200 active:scale-90 ${showBar ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"}`}>
+        style={{ bottom: "calc(var(--nav-h) + 1rem)" }}
+        className={`fixed right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border-2 border-gold-300 bg-ivory text-2xl font-bold text-gold-700 shadow-lg transition-all duration-200 active:scale-90 ${showBar ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"}`}>
         ↑
       </button>
 
       {toast && (
-        <div role="status" className="fade-up fixed inset-x-4 bottom-40 z-50 mx-auto max-w-md rounded-2xl border border-gold-300 bg-gold-900 px-4 py-3 text-center text-sm font-semibold text-gold-50 shadow-lg">
+        <div role="status" style={{ bottom: "calc(var(--nav-h) + 5rem)" }} className="fade-up fixed inset-x-4 z-50 mx-auto max-w-md rounded-2xl border border-gold-300 bg-gold-900 px-4 py-3 text-center text-sm font-semibold text-gold-50 shadow-lg">
           {toast}
         </div>
       )}

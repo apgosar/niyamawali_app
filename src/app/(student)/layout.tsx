@@ -7,7 +7,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
   if (!student) redirect("/login");
   if (student.must_change_pin) redirect("/change-pin");
   return (
-    <div className="mx-auto min-h-dvh max-w-md pb-28">
+    <div className="mx-auto min-h-dvh max-w-md" style={{ paddingBottom: "calc(var(--nav-h) + 1.5rem)" }}>
       {children}
       <BottomNav />
     </div>
