@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/components/I18nProvider";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { MultiSelect } from "@/components/MultiSelect";
+import { Combobox } from "@/components/Combobox";
 import { PREVIOUS_SHIBIRS, STANDARDS, parseShibirs, standardLabel } from "@/lib/profile-options";
 
 function Field({ k, label, error, children }: { k: string; label: string; error?: string | null; children: React.ReactNode }) {
@@ -16,7 +17,7 @@ function Field({ k, label, error, children }: { k: string; label: string; error?
   );
 }
 
-export function EditForm({ initial, photoKey }: { initial: Record<string, string>; photoKey: string }) {
+export function EditForm({ initial, photoKey, villages }: { initial: Record<string, string>; photoKey: string; villages: string[] }) {
   const { t, lang } = useI18n();
   const r = t.register;
   const router = useRouter();
@@ -56,7 +57,10 @@ export function EditForm({ initial, photoKey }: { initial: Record<string, string
       <Field k="father_name" label={r.fatherName}>{input("father_name")}</Field>
       <Field k="father_phone" label={r.fatherPhone} error={msg(errors.father_phone)}>{input("father_phone", { type: "tel", inputMode: "numeric" })}</Field>
       <Field k="own_phone" label={`${r.ownPhone} (${t.common.optional})`} error={msg(errors.own_phone)}>{input("own_phone", { type: "tel", inputMode: "numeric" })}</Field>
-      <Field k="village" label={r.village} error={msg(errors.village)}>{input("village")}</Field>
+      <Field k="village" label={r.village} error={msg(errors.village)}>
+        <Combobox id="village" value={v.village ?? ""} options={villages} placeholder={r.villageSearch} invalid={!!errors.village}
+          addLabel={r.villageAdd} newHint={r.villageNew} onChange={(val) => { setV((s) => ({ ...s, village: val })); setDone(false); }} />
+      </Field>
       <Field k="residence" label={r.residence} error={msg(errors.residence)}>{input("residence")}</Field>
       <Field k="sangh" label={r.sangh} error={msg(errors.sangh)}>{input("sangh")}</Field>
       <div>

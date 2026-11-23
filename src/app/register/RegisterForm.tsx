@@ -5,6 +5,7 @@ import { useI18n } from "@/components/I18nProvider";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { PinPad } from "@/components/PinPad";
 import { MultiSelect } from "@/components/MultiSelect";
+import { Combobox } from "@/components/Combobox";
 import { PREVIOUS_SHIBIRS, STANDARDS, standardLabel } from "@/lib/profile-options";
 
 type Errors = Record<string, string>;
@@ -190,7 +191,11 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
               {errors.gender && <p role="alert" className="err">{msg(errors.gender)}</p>}
             </div>
             <Field k="dob" error={msg(errors.dob)} label={`${r.dob} *`}>{text("dob", { type: "date", max: today, min: "1930-01-01" })}</Field>
-            <Field k="village" error={msg(errors.village)} label={`${r.village} *`}>{text("village", { list: "dl-village" })}</Field>
+            <Field k="village" error={msg(errors.village)} label={`${r.village} *`}>
+              <Combobox id="village" value={v.village ?? ""} options={suggestions.village} placeholder={r.villageSearch} invalid={!!errors.village}
+                addLabel={r.villageAdd} newHint={r.villageNew}
+                onChange={(val) => { setV((s) => ({ ...s, village: val })); if (errors.village) setErrors((s) => ({ ...s, village: "" })); }} />
+            </Field>
           </>
         )}
 
@@ -272,7 +277,6 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
         <Link href="/login" className="font-semibold text-gold-600 underline underline-offset-4">{r.login}</Link>
       </p>
 
-      <datalist id="dl-village">{suggestions.village.map((s) => <option key={s} value={s} />)}</datalist>
       <datalist id="dl-residence">{suggestions.residence.map((s) => <option key={s} value={s} />)}</datalist>
       <datalist id="dl-sangh">{suggestions.sangh.map((s) => <option key={s} value={s} />)}</datalist>
     </section>

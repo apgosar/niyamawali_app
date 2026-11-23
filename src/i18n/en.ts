@@ -34,6 +34,7 @@ export const en = {
     photo: "Photo", photoAdd: "Tap to add your photo", photoChange: "Change photo",
     photoAdjust: "Adjust photo", photoAdjustHint: "Drag to move, use the slider to zoom", photoZoom: "Zoom", photoRotate: "Rotate",
     dob: "Date of birth", village: "Village",
+    villageSearch: "Start typing to search your village", villageAdd: "Use “{name}” (new village)", villageNew: "Not on our list yet — “{name}” will be added.",
     fatherName: "Father's name", fatherPhone: "Father's contact number",
     motherName: "Mother's name", motherPhone: "Mother's contact number",
     ownPhone: "Your own contact number", parentRule: "Please give at least one parent's name and contact number.",

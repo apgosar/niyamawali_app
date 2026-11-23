@@ -168,3 +168,12 @@ Admin → **Settings** → tick or untick **Referral programme** → *Save setti
   old `?ref=` links just open the normal registration form (nobody is linked as a referrer), and no referral bonus is paid.
 - Referrals already made are kept and bonuses already paid stay. Referrals still waiting for their logged days are **paused** and are paid
   on the student’s next saved entry once you turn it back **on**.
+
+## 9. Village list
+
+The **Village** field on registration and *Edit profile* is a search box: type a few letters and the matching villages from the list appear
+straight away. Tap one to use it. If the village is not on the list, whatever was typed is accepted (tidied up: single spaces, capital letters)
+and **added to the list** for the next student. Capitals and spacing never create duplicates (“bhuj”, “BHUJ” and “Bhuj” are one village).
+
+The list is the `villages` table. It starts with the 94 villages supplied (`supabase/migrations/0004_villages.sql`) plus any village existing
+students have already entered. Run `npm run db:migrate` before deploying (safe to repeat).

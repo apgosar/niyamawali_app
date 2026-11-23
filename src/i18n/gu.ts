@@ -36,6 +36,7 @@ export const gu: Dict = {
     photo: "ફોટો", photoAdd: "ફોટો ઉમેરવા ટૅપ કરો", photoChange: "ફોટો બદલો",
     photoAdjust: "ફોટો ગોઠવો", photoAdjustHint: "ખસેડવા ખેંચો, મોટો-નાનો કરવા સ્લાઇડર વાપરો", photoZoom: "ઝૂમ", photoRotate: "ફેરવો",
     dob: "જન્મ તારીખ", village: "ગામ",
+    villageSearch: "તમારું ગામ શોધવા લખવાનું શરૂ કરો", villageAdd: "“{name}” વાપરો (નવું ગામ)", villageNew: "અમારી યાદીમાં હજી નથી — “{name}” ઉમેરાશે.",
     fatherName: "પિતાનું નામ", fatherPhone: "પિતાનો સંપર્ક નંબર",
     motherName: "માતાનું નામ", motherPhone: "માતાનો સંપર્ક નંબર",
     ownPhone: "તમારો પોતાનો સંપર્ક નંબર", parentRule: "કૃપા કરી ઓછામાં ઓછા એક માતા-પિતાનું નામ અને સંપર્ક નંબર આપો.",

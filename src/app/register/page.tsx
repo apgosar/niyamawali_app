@@ -4,12 +4,13 @@ import { getT } from "@/lib/lang";
 import { query } from "@/lib/db";
 import { findReferrer, normalizeCode } from "@/lib/referrals";
 import { getSettings } from "@/lib/settings";
+import { listVillages } from "@/lib/villages";
 import { BrandHeader } from "@/components/Brand";
 import { RegisterForm } from "./RegisterForm";
 
 export const metadata = { title: "Register" };
 
-async function suggestions(col: "sangh" | "residence" | "village") {
+async function suggestions(col: "sangh" | "residence") {
   const rows = await query<{ v: string }>(
     `select ${col} as v from students group by ${col} order by count(*) desc, ${col} limit 40`,
   );
@@ -26,7 +27,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
     code && settings.referralsEnabled ? findReferrer(code) : null,
     suggestions("sangh"),
     suggestions("residence"),
-    suggestions("village"),
+    listVillages(),
   ]);
 
   return (
