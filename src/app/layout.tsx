@@ -4,6 +4,12 @@ import "./globals.css";
 import { getLang } from "@/lib/lang";
 import { I18nProvider } from "@/components/I18nProvider";
 import { PwaRegister } from "@/components/PwaRegister";
+import { Splash } from "@/components/Splash";
+import { SplashDonor } from "@/components/SplashDonor";
+import { Suspense } from "react";
+
+// Runs before the page paints: no opening screen for admin pages, or after it has been shown once in this app session.
+const SPLASH_GATE = "try{if(sessionStorage.getItem('ns_splash')||location.pathname.indexOf('/admin')===0||location.pathname==='/offline')document.documentElement.setAttribute('data-splash','skip')}catch(e){}";
 
 const display = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display-en" });
 const displayGu = Noto_Serif_Gujarati({ subsets: ["gujarati", "latin"], variable: "--font-display-gu" });
@@ -29,9 +35,17 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await getLang();
   return (
-    <html lang={lang} className={`${display.variable} ${displayGu.variable} ${body.variable} ${bodyGu.variable}`}>
+    <html lang={lang} suppressHydrationWarning className={`${display.variable} ${displayGu.variable} ${body.variable} ${bodyGu.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_GATE }} />
+      </head>
       <body>
-        <I18nProvider lang={lang}>{children}</I18nProvider>
+        <I18nProvider lang={lang}>
+          {children}
+          <Splash>
+            <Suspense fallback={null}><SplashDonor /></Suspense>
+          </Splash>
+        </I18nProvider>
         <PwaRegister />
       </body>
     </html>

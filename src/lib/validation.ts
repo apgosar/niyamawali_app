@@ -1,5 +1,6 @@
 import { ageOn, isValidYmd, todayIST } from "./dates";
 import { normalizePhone } from "./auth";
+import { GENDERS, PREVIOUS_SHIBIRS, STANDARDS, type Gender } from "./profile-options";
 
 export type FieldErrors = Record<string, string>;
 
@@ -15,12 +16,15 @@ export interface StudentDetails {
   dharmik_abhyas: string;
   pathshala: boolean;
   pathshala_name: string | null;
+  standard: number | null;
+  /** comma-separated codes, "" = none */
+  previous_shibirs: string;
 }
 
 const str = (v: FormDataEntryValue | null, max = 150) => (typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "");
 
 /** Validates the "details" part shared by registration and profile edit. */
-export function parseDetails(fd: FormData, errors: FieldErrors): StudentDetails {
+export function parseDetails(fd: FormData, errors: FieldErrors, opts: { requireStandard?: boolean } = {}): StudentDetails {
   const village = str(fd.get("village"));
   const residence = str(fd.get("residence"));
   const sangh = str(fd.get("sangh"));
@@ -55,6 +59,19 @@ export function parseDetails(fd: FormData, errors: FieldErrors): StudentDetails 
   if (fd.get("pathshala") !== "yes" && fd.get("pathshala") !== "no") errors.pathshala = "required";
   if (pathshala && !pathshala_name) errors.pathshala_name = "required";
 
+  // current standard (1st – 15th): required when registering, optional when an existing student edits their details
+  const stdRaw = str(fd.get("standard"), 3);
+  let standard: number | null = null;
+  if (stdRaw) {
+    const n = Number(stdRaw);
+    if (STANDARDS.includes(n)) standard = n;
+    else errors.standard = "required";
+  } else if (opts.requireStandard) errors.standard = "required";
+
+  // previously attended shibirs: any number of the known options (none is fine)
+  const picked = new Set(fd.getAll("previous_shibirs").map((x) => String(x)));
+  const previous_shibirs = PREVIOUS_SHIBIRS.map((s) => s.code).filter((c) => picked.has(c)).join(",");
+
   return {
     village,
     father_name: fatherOk || father_name ? father_name || null : null,
@@ -67,6 +84,8 @@ export function parseDetails(fd: FormData, errors: FieldErrors): StudentDetails 
     dharmik_abhyas,
     pathshala,
     pathshala_name: pathshala ? pathshala_name : null,
+    standard,
+    previous_shibirs,
   };
 }
 
@@ -82,7 +101,10 @@ export function parseIdentity(fd: FormData, errors: FieldErrors) {
     const age = ageOn(dob, todayIST());
     if (age < 3 || age > 100) errors.dob = "dob";
   }
-  return { first_name, surname, dob };
+  const g = str(fd.get("gender"), 1).toUpperCase();
+  const gender = (GENDERS as readonly string[]).includes(g) ? (g as Gender) : null;
+  if (!gender) errors.gender = "required";
+  return { first_name, surname, dob, gender };
 }
 
 export const MAX_PHOTO_BYTES = 3 * 1024 * 1024;

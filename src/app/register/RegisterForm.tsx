@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useI18n } from "@/components/I18nProvider";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { PinPad } from "@/components/PinPad";
+import { MultiSelect } from "@/components/MultiSelect";
+import { PREVIOUS_SHIBIRS, STANDARDS, standardLabel } from "@/lib/profile-options";
 
 type Errors = Record<string, string>;
 interface Props {
@@ -15,9 +17,9 @@ interface Props {
 }
 
 const STEP_FIELDS: string[][] = [
-  ["photo", "first_name", "surname", "dob", "village"],
+  ["photo", "first_name", "surname", "gender", "dob", "village"],
   ["father_name", "father_phone", "mother_name", "mother_phone", "own_phone", "parent"],
-  ["residence", "sangh", "dharmik_abhyas", "pathshala", "pathshala_name"],
+  ["residence", "sangh", "standard", "dharmik_abhyas", "pathshala", "pathshala_name"],
   ["pin"],
 ];
 const TOTAL = STEP_FIELDS.length;
@@ -35,10 +37,11 @@ function Field({ k, label, hint, error, children }: { k: string; label: string; 
 }
 
 export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions }: Props) {
-  const { t, f, n } = useI18n();
+  const { t, f, n, lang } = useI18n();
   const r = t.register;
   const [step, setStep] = useState(0);
-  const [v, setV] = useState<Record<string, string>>({ pathshala: "" });
+  const [v, setV] = useState<Record<string, string>>({ pathshala: "", gender: "", standard: "" });
+  const [shibirs, setShibirs] = useState<string[]>([]);
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [pin, setPin] = useState("");
   const [pin2, setPin2] = useState("");
@@ -66,7 +69,7 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
     const req = (k: string) => { if (!v[k]?.trim()) e[k] = "required"; };
     if (s === 0) {
       if (!photo) e.photo = "photo";
-      req("first_name"); req("surname"); req("village");
+      req("first_name"); req("surname"); req("village"); req("gender");
       if (v.first_name && /\s/.test(v.first_name.trim())) e.first_name = "name";
       if (!v.dob) e.dob = "dob";
     }
@@ -83,7 +86,7 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
       }
     }
     if (s === 2) {
-      req("residence"); req("sangh"); req("dharmik_abhyas");
+      req("residence"); req("sangh"); req("dharmik_abhyas"); req("standard");
       if (!v.pathshala) e.pathshala = "required";
       if (v.pathshala === "yes") req("pathshala_name");
     }
@@ -102,6 +105,7 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
     setBusy(true); setFormError(null);
     const fd = new FormData();
     for (const [k, val] of Object.entries(v)) fd.set(k, val);
+    shibirs.forEach((s) => fd.append("previous_shibirs", s));
     fd.set("pin", finalPin);
     if (refCode) fd.set("ref", refCode);
     if (photo) fd.set("photo", photo, "photo.jpg");
@@ -171,6 +175,20 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
               {text("first_name", { autoComplete: "given-name", autoCapitalize: "words" })}
             </Field>
             <Field k="surname" error={msg(errors.surname)} label={`${r.surname} *`}>{text("surname", { autoComplete: "family-name", autoCapitalize: "words" })}</Field>
+            <div>
+              <p className="label">{r.gender} *</p>
+              <div className="grid grid-cols-2 gap-3">
+                {([["M", r.male], ["F", r.female]] as const).map(([g, label]) => (
+                  <button key={g} type="button" aria-pressed={v.gender === g}
+                    onClick={() => { setV((s) => ({ ...s, gender: g })); setErrors((s) => ({ ...s, gender: "" })); }}
+                    className={`min-h-12 rounded-xl border-2 font-semibold transition ${
+                      v.gender === g ? "border-sage-500 bg-sage-50 text-sage-700" : errors.gender ? "border-danger bg-white text-ink" : "border-gold-100 bg-white text-ink"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {errors.gender && <p role="alert" className="err">{msg(errors.gender)}</p>}
+            </div>
             <Field k="dob" error={msg(errors.dob)} label={`${r.dob} *`}>{text("dob", { type: "date", max: today, min: "1930-01-01" })}</Field>
             <Field k="village" error={msg(errors.village)} label={`${r.village} *`}>{text("village", { list: "dl-village" })}</Field>
           </>
@@ -192,6 +210,13 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
           <>
             <Field k="residence" error={msg(errors.residence)} label={`${r.residence} *`} hint={r.residenceHint}>{text("residence", { list: "dl-residence" })}</Field>
             <Field k="sangh" error={msg(errors.sangh)} label={`${r.sangh} *`} hint={r.sanghHint}>{text("sangh", { list: "dl-sangh" })}</Field>
+            <Field k="standard" error={msg(errors.standard)} label={`${r.standard} *`}>
+              <select id="standard" name="standard" className="field" value={v.standard ?? ""} aria-invalid={!!errors.standard}
+                onChange={(e) => { setV((s) => ({ ...s, standard: e.target.value })); setErrors((s) => ({ ...s, standard: "" })); }}>
+                <option value="">{r.standardPick}</option>
+                {STANDARDS.map((n2) => <option key={n2} value={n2}>{standardLabel(n2, lang)}</option>)}
+              </select>
+            </Field>
             <Field k="dharmik_abhyas" error={msg(errors.dharmik_abhyas)} label={`${r.abhyas} *`} hint={r.abhyasHint}>{text("dharmik_abhyas")}</Field>
             <div>
               <p className="label">{r.pathshala} *</p>
@@ -210,6 +235,10 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
             {v.pathshala === "yes" && (
               <Field k="pathshala_name" error={msg(errors.pathshala_name)} label={`${r.pathshalaWhich} *`} hint={r.pathshalaHint}>{text("pathshala_name")}</Field>
             )}
+            <Field k="previous_shibirs" label={r.previousShibir} hint={r.previousHint}>
+              <MultiSelect id="previous_shibirs" options={PREVIOUS_SHIBIRS.map((s) => ({ value: s.code, label: s.label }))}
+                value={shibirs} onChange={setShibirs} placeholder={r.selectPlaceholder} />
+            </Field>
           </>
         )}
 

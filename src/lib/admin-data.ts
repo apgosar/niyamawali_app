@@ -131,6 +131,9 @@ export interface StudentRow {
   dharmik_abhyas: string;
   pathshala: boolean;
   pathshala_name: string | null;
+  gender: string | null;
+  standard: number | null;
+  previous_shibirs: string;
   active: boolean;
   created_at: string;
   points: number;
@@ -172,7 +175,7 @@ export async function queryStudents(f: StudentFilters, opts: { limit?: number; o
     const phoneLike = digits.length >= 3 ? p(`%${digits}%`) : null;
     where.push(
       `(s.first_name || ' ' || s.surname ilike ${like} or s.referral_code ilike ${like} or s.student_code ilike ${like}` +
-        (phoneLike ? ` or s.father_phone like ${phoneLike} or s.mother_phone like ${phoneLike} or s.own_phone like ${phoneLike} or replace(s.student_code, '-', '') like ${phoneLike}` : "") +
+        (phoneLike ? ` or s.father_phone like ${phoneLike} or s.mother_phone like ${phoneLike} or s.own_phone like ${phoneLike} or regexp_replace(s.student_code, '[^0-9]', '', 'g') like ${phoneLike}` : "") +
         ")",
     );
   }
@@ -194,7 +197,7 @@ export async function queryStudents(f: StudentFilters, opts: { limit?: number; o
      )
      select s.id, s.student_code, s.first_name, s.surname, s.photo_key, s.dob::text as dob, s.village, s.residence, s.sangh,
             s.father_name, s.father_phone, s.mother_name, s.mother_phone, s.own_phone, s.dharmik_abhyas,
-            s.pathshala, s.pathshala_name, s.active, s.created_at::text as created_at,
+            s.pathshala, s.pathshala_name, s.gender, s.standard, s.previous_shibirs, s.active, s.created_at::text as created_at,
             coalesce(pts.points, 0)::int as points, coalesce(days.n, 0)::int as active_days,
             count(*) over ()::int as total
        from students s

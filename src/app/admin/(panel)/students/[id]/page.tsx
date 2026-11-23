@@ -4,6 +4,7 @@ import { getStudentDetail } from "@/lib/admin-data";
 import { ageOn, fmtIST, monthLabel, todayIST } from "@/lib/dates";
 import { BADGES } from "@/lib/badges";
 import { Avatar } from "@/components/Avatar";
+import { ordinal, shibirLabels } from "@/lib/profile-options";
 import { deleteBonus, toggleStudentActive } from "../../../actions";
 import { BonusForm, ResetPinForm } from "../../../forms";
 import { RevokeButton, UnlockForm } from "../../../UnlockForm";
@@ -30,7 +31,10 @@ export default async function StudentDetail({ params }: { params: Promise<{ id: 
 
   return (
     <div className="space-y-5">
-      <Link href="/admin/students" className="text-sm font-semibold text-gold-600">← All students</Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/admin/students" className="text-sm font-semibold text-gold-600">← All students</Link>
+        <Link href={`/admin/students/${id}/entries`} className="btn btn-gold min-h-10 px-4 py-2">📅 Daily entries (date by date)</Link>
+      </div>
 
       <section className="card flex flex-wrap items-center gap-4 p-4">
         <Avatar photoKey={String(s.photo_key)} name={name} size={88} />
@@ -78,7 +82,10 @@ export default async function StudentDetail({ params }: { params: Promise<{ id: 
             <Row k="Mother" v={s.mother_name ? `${s.mother_name} · ${s.mother_phone}` : null} />
             <Row k="Father" v={s.father_name ? `${s.father_name} · ${s.father_phone}` : null} />
             <Row k="Own number" v={s.own_phone} />
+            <Row k="Gender" v={s.gender === "M" ? "Male (M)" : s.gender === "F" ? "Female (F)" : null} />
+            <Row k="Current standard" v={s.standard ? `${ordinal(Number(s.standard))} standard` : null} />
             <Row k="Dharmik abhyas" v={s.dharmik_abhyas} />
+            <Row k="Previous shibirs" v={shibirLabels(String(s.previous_shibirs ?? "")).join(", ") || "None"} />
             <Row k="Pathshala" v={s.pathshala ? `Yes – ${s.pathshala_name}` : "No"} />
             <Row k="Referred by" v={s.referred_by_name} />
             <Row k="Joined" v={String(s.created_at).slice(0, 10)} />
@@ -105,7 +112,7 @@ export default async function StudentDetail({ params }: { params: Promise<{ id: 
           <h2 className="mb-2 text-lg font-bold text-gold-700">Month by month</h2>
           <table className="w-full text-sm"><thead className="text-xs uppercase text-muted"><tr><th className="py-1 text-left">Month</th><th className="text-right">Days</th><th className="text-right">Points</th></tr></thead>
             <tbody className="divide-y divide-gold-100">
-              {months.map((m) => <tr key={m.month}><td className="py-2">{monthLabel(m.month, "en")}</td><td className="text-right tabular-nums">{m.days}</td><td className="text-right font-bold tabular-nums">{m.total}</td></tr>)}
+              {months.map((m) => <tr key={m.month}><td className="py-2"><Link href={`/admin/students/${id}/entries?month=${m.month}`} className="font-semibold text-gold-700 hover:underline">{monthLabel(m.month, "en")}</Link></td><td className="text-right tabular-nums">{m.days}</td><td className="text-right font-bold tabular-nums">{m.total}</td></tr>)}
               {months.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-muted">No activity yet.</td></tr>}
             </tbody></table>
         </section>

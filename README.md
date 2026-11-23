@@ -72,7 +72,7 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
   background and works offline (changes sync when the phone is back online).
 - **Submit & lock:** a student can change today and the previous N−1 days (N = *Edit window* in Settings, default 3) until they tap
   **Submit day** and confirm. A submitted day is **locked**: only an admin unlock can reopen it. Everyone has a unique
-  **Student ID** like `26-00001` (joining year + running number), shown on the Today and Profile screens so they can quote it to the admin.
+  **Student ID** like `26-M-00001` (joining year + gender M/F + running number; students who registered before gender was asked keep the older form `26-00001`), shown on the Today and Profile screens so they can quote it to the admin.
 - **Rankings are admin-only.** Students see only their own points. Once a month has ended, the admin shares the result
   (see below) and students open the link to see the top 3, their own points and rank, and a button for their certificate.
 - **Referral:** Profile → Invite friends. Shares a link like `/register?ref=ABC123` (WhatsApp / share sheet / copy).
@@ -146,3 +146,17 @@ npm run db:migrate
 ```
 
 It is safe to run repeatedly. Existing students are numbered in the order they joined (e.g. `26-00001`).
+
+## 7. Opening screen, new registration fields, daily entries
+
+- **Opening screen:** when the app is opened, the Shibir logo and this month’s donor (name, photo, message from *Admin → Donors*) are shown for
+  about 4.5 seconds, once per app launch (tap after 2 s to skip). Admin pages never show it. Donor photos are public so they can appear before
+  login; student photos stay private.
+- **Registration** also asks for **gender** (M/F, part of the Student ID and fixed once set), **current standard** (1st – 15th) and a
+  multi-select dropdown **Previous Divine Sanskar Shibir attended** (Jogeshwari, Deolali, Kutch - Don, Kutch - Pundi). Students who registered
+  earlier can fill these in under Profile → *My details*. The admin sees them on the student page and in the CSV export.
+- **Admin → Daily entries** shows every student for one date (who entered, how many niyams, points, whether the day was submitted and when).
+  Open a student (or use *Daily entries* on a student page) for a month grid like the paper sheet — ✓, gatha counts and choice letters per
+  day, with 🔒 for submitted days — plus a day-by-day list with exact values and the time each entry was last changed. CSV export for both.
+
+Version 3 adds three columns (gender, standard, previous shibirs): run `npm run db:migrate` before deploying (safe to repeat).

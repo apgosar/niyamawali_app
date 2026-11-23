@@ -9,7 +9,7 @@ export async function GET() {
   if (!s) return NextResponse.json({ error: "auth" }, { status: 401 });
   const d = await one(
     `select village, father_name, father_phone, mother_name, mother_phone, own_phone, residence, sangh,
-            dharmik_abhyas, pathshala, pathshala_name from students where id = $1`,
+            dharmik_abhyas, pathshala, pathshala_name, standard, previous_shibirs, gender from students where id = $1`,
     [s.id],
   );
   return NextResponse.json(d);
@@ -24,6 +24,8 @@ export async function POST(req: Request) {
 
   const errors: FieldErrors = {};
   const d = parseDetails(fd, errors);
+  const g = String(fd.get("gender") ?? "").toUpperCase();
+  const gender = g === "M" || g === "F" ? g : null;
   if (Object.keys(errors).length) return NextResponse.json({ errors }, { status: 422 });
 
   let newKey: string | null = null;
@@ -40,10 +42,11 @@ export async function POST(req: Request) {
   await query(
     `update students set village=$2, father_name=$3, father_phone=$4, mother_name=$5, mother_phone=$6, own_phone=$7,
             residence=$8, sangh=$9, dharmik_abhyas=$10, pathshala=$11, pathshala_name=$12,
-            photo_key = coalesce($13, photo_key)
+            photo_key = coalesce($13, photo_key), standard = $14, previous_shibirs = $15,
+            gender = coalesce(gender, $16)  -- gender can be filled in once (never changed), so the Student ID stays correct
       where id = $1`,
     [s.id, d.village, d.father_name, d.father_phone, d.mother_name, d.mother_phone, d.own_phone, d.residence,
-     d.sangh, d.dharmik_abhyas, d.pathshala, d.pathshala_name, newKey],
+     d.sangh, d.dharmik_abhyas, d.pathshala, d.pathshala_name, newKey, d.standard, d.previous_shibirs, gender],
   );
   if (newKey) await deletePhoto(s.photo_key);
   return NextResponse.json({ ok: true });

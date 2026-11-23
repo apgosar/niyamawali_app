@@ -4,6 +4,7 @@ import { hashPin, isValidPin, startStudentSession } from "@/lib/auth";
 import { generateUniqueCode, findReferrer } from "@/lib/referrals";
 import { deletePhoto, savePhoto } from "@/lib/storage";
 import { MAX_PHOTO_BYTES, parseDetails, parseIdentity, type FieldErrors } from "@/lib/validation";
+import { studentCodeSql } from "@/lib/student-code";
 
 export async function POST(req: Request) {
   const fd = await req.formData().catch(() => null);
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
 
   const errors: FieldErrors = {};
   const id = parseIdentity(fd, errors);
-  const details = parseDetails(fd, errors);
+  const details = parseDetails(fd, errors, { requireStandard: true });
   const pin = fd.get("pin");
   if (!isValidPin(pin)) errors.pin = "pin";
 
@@ -47,13 +48,15 @@ export async function POST(req: Request) {
       const rows = await q.query<{ id: string; session_version: number }>(
         `insert into students
            (first_name, surname, photo_key, dob, village, father_name, father_phone, mother_name, mother_phone,
-            own_phone, residence, sangh, dharmik_abhyas, pathshala, pathshala_name, pin_hash, referral_code, referred_by)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+            own_phone, residence, sangh, dharmik_abhyas, pathshala, pathshala_name, pin_hash, referral_code, referred_by,
+            gender, standard, previous_shibirs, student_code)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,${studentCodeSql("$19")})
          returning id, session_version`,
         [
           id.first_name, id.surname, photoKey, id.dob, details.village, details.father_name, details.father_phone,
           details.mother_name, details.mother_phone, details.own_phone, details.residence, details.sangh,
           details.dharmik_abhyas, details.pathshala, details.pathshala_name, pinHash, code, referrer?.id ?? null,
+          id.gender, details.standard, details.previous_shibirs,
         ],
       );
       if (referrer) {

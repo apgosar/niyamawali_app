@@ -87,12 +87,22 @@ export async function searchStudents(q: string, limit = 20): Promise<FoundStuden
   const digits = text.replace(/\D/g, "").slice(0, 12);
   const params: unknown[] = [`%${text}%`];
   const conds = ["s.first_name || ' ' || s.surname ilike $1", "s.student_code ilike $1"];
-  if (digits) {
-    params.push(digits);
-    const d = `$${params.length}`;
-    // "26-00001" typed with or without the dash, or just the running number ("1", "00001")
-    conds.push(`replace(s.student_code, '-', '') = ${d}`);
-    conds.push(`split_part(s.student_code, '-', 2)::bigint = ${d}::bigint`);
+  // The running number is the last part of the ID (26-M-00007 → 00007).
+  const lastPart = "regexp_replace(s.student_code, '^.*-', '')::bigint";
+  const compact = text.replace(/[^0-9a-z]/gi, "").toUpperCase(); // "26-m-00007" → "26M00007"
+  if (compact) {
+    params.push(compact);
+    conds.push(`replace(s.student_code, '-', '') = $${params.length}`);
+  }
+  if (/^\d{1,9}$/.test(text)) {
+    params.push(text); // just the number: "7" or "00007"
+    conds.push(`${lastPart} = $${params.length}::bigint`);
+  }
+  const yn = text.match(/^(\d{2})\D*(\d{1,5})$/);
+  if (yn) {
+    // year + number without the gender letter: "26-00007" / "2600007"
+    params.push(yn[1], yn[2]);
+    conds.push(`left(s.student_code, 2) = $${params.length - 1} and ${lastPart} = $${params.length}::bigint`);
   }
   if (digits.length >= 6) {
     params.push(`%${digits}%`);

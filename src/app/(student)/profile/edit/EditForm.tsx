@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/components/I18nProvider";
 import { PhotoPicker } from "@/components/PhotoPicker";
+import { MultiSelect } from "@/components/MultiSelect";
+import { PREVIOUS_SHIBIRS, STANDARDS, parseShibirs, standardLabel } from "@/lib/profile-options";
 
 function Field({ k, label, error, children }: { k: string; label: string; error?: string | null; children: React.ReactNode }) {
   return (
@@ -15,10 +17,12 @@ function Field({ k, label, error, children }: { k: string; label: string; error?
 }
 
 export function EditForm({ initial, photoKey }: { initial: Record<string, string>; photoKey: string }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const r = t.register;
   const router = useRouter();
   const [v, setV] = useState(initial);
+  const [shibirs, setShibirs] = useState<string[]>(parseShibirs(initial.previous_shibirs));
+  const genderLocked = initial.gender === "M" || initial.gender === "F"; // part of the Student ID: set once
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -33,7 +37,8 @@ export function EditForm({ initial, photoKey }: { initial: Record<string, string
     e.preventDefault();
     setBusy(true);
     const fd = new FormData();
-    for (const [k, val] of Object.entries(v)) fd.set(k, val);
+    for (const [k, val] of Object.entries(v)) if (k !== "previous_shibirs") fd.set(k, String(val ?? ""));
+    shibirs.forEach((s) => fd.append("previous_shibirs", s));
     if (photo) fd.set("photo", photo, "photo.jpg");
     const res = await fetch("/api/profile", { method: "POST", body: fd });
     const data = await res.json().catch(() => ({}));
@@ -54,6 +59,25 @@ export function EditForm({ initial, photoKey }: { initial: Record<string, string
       <Field k="village" label={r.village} error={msg(errors.village)}>{input("village")}</Field>
       <Field k="residence" label={r.residence} error={msg(errors.residence)}>{input("residence")}</Field>
       <Field k="sangh" label={r.sangh} error={msg(errors.sangh)}>{input("sangh")}</Field>
+      <div>
+        <p className="label">{r.gender}</p>
+        <div className="grid grid-cols-2 gap-3">
+          {([["M", r.male], ["F", r.female]] as const).map(([g, label]) => (
+            <button key={g} type="button" aria-pressed={v.gender === g} disabled={genderLocked}
+              onClick={() => { setV((s) => ({ ...s, gender: g })); setDone(false); }}
+              className={`min-h-12 rounded-xl border-2 font-semibold ${v.gender === g ? "border-sage-500 bg-sage-50 text-sage-700" : "border-gold-100 bg-white"} ${genderLocked && v.gender !== g ? "opacity-40" : ""}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="hint">{r.genderFixed}</p>
+      </div>
+      <Field k="standard" label={r.standard} error={msg(errors.standard)}>
+        <select id="standard" className="field" value={v.standard ?? ""} onChange={(e) => { setV((s) => ({ ...s, standard: e.target.value })); setDone(false); }}>
+          <option value="">{r.standardPick}</option>
+          {STANDARDS.map((n2) => <option key={n2} value={n2}>{standardLabel(n2, lang)}</option>)}
+        </select>
+      </Field>
       <Field k="dharmik_abhyas" label={r.abhyas} error={msg(errors.dharmik_abhyas)}>{input("dharmik_abhyas")}</Field>
       <div>
         <p className="label">{r.pathshala}</p>
@@ -67,6 +91,11 @@ export function EditForm({ initial, photoKey }: { initial: Record<string, string
         </div>
       </div>
       {v.pathshala === "yes" && <Field k="pathshala_name" label={r.pathshalaWhich} error={msg(errors.pathshala_name)}>{input("pathshala_name")}</Field>}
+      <Field k="previous_shibirs" label={r.previousShibir}>
+        <MultiSelect id="previous_shibirs" options={PREVIOUS_SHIBIRS.map((s) => ({ value: s.code, label: s.label }))}
+          value={shibirs} onChange={(next) => { setShibirs(next); setDone(false); }} placeholder={r.selectPlaceholder} />
+        <p className="hint">{r.previousHint}</p>
+      </Field>
       {errors.form && <p role="alert" className="err">{t.common.somethingWrong}</p>}
       <button type="submit" className="btn btn-gold w-full" disabled={busy}>{done ? `${t.profile.saved} ✓` : t.common.save}</button>
     </form>
