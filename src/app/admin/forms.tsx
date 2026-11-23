@@ -82,6 +82,15 @@ export function SettingsForm({ values }: { values: Record<string, string> }) {
   const [state, action, pending] = useActionState(saveSettingsAction, null);
   return (
     <form action={action} className="space-y-4">
+      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-gold-300 bg-gold-50 p-4">
+        <input type="checkbox" name="referrals_enabled" defaultChecked={values.referrals_enabled === "1"} className="mt-1 h-6 w-6 shrink-0 accent-[#b8862b]" />
+        <span>
+          <span className="block text-base font-bold text-gold-700">Referral programme</span>
+          <span className="mt-0.5 block text-sm text-ink">Tick to turn referrals <b>on</b>; untick to turn them <b>off</b>. When off: students do not see the invite card or
+            share a referral link, invite links stop working as invites (the person can still register normally), and no referral bonus is paid.
+            Referrals already made are kept; pending ones are paid after you turn it back on.</span>
+        </span>
+      </label>
       <div><label className="label" htmlFor="edit_window_days">Edit window (days)</label>
         <input id="edit_window_days" name="edit_window_days" type="number" min={1} max={31} defaultValue={values.edit_window_days} className="field" />
         <p className="hint">Students can log today and the previous (N − 1) days. Default 3.</p></div>

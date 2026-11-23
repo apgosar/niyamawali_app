@@ -3,6 +3,7 @@ import { query } from "../db";
 import { addDays, todayIST } from "../dates";
 import { getBadges, getMonthTotal, getNiyams, LogError, saveEntry } from "../logs";
 import { monthlyLeaderboard } from "../leaderboard";
+import { saveSettings } from "../settings";
 
 const today = todayIST();
 let a = "", b = "", c = "";
@@ -71,6 +72,7 @@ describe("saveEntry", () => {
 });
 
 describe("referral bonus", () => {
+  beforeAll(async () => { await saveSettings({ referrals_enabled: "1" }); }); // the programme is OFF by default
   it("stays pending until the referee has logged 3 different days", async () => {
     await saveEntry(b, today, ids.yesno, 1);
     await saveEntry(b, addDays(today, -1), ids.yesno, 1);

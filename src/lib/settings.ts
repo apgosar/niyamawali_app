@@ -2,6 +2,8 @@ import { query } from "./db";
 import { parseStreakBonuses, type StreakBonus } from "./streaks";
 
 export interface AppSettings {
+  /** Referral programme on/off. Off unless an admin turns it on in Settings. */
+  referralsEnabled: boolean;
   editWindowDays: number;
   referralBonus: number;
   referralUnlockDays: number;
@@ -12,6 +14,7 @@ export interface AppSettings {
 }
 
 const DEFAULTS: Record<string, string> = {
+  referrals_enabled: "0",
   edit_window_days: "3",
   referral_bonus: "100",
   referral_unlock_days: "3",
@@ -29,6 +32,7 @@ export async function getSettings(): Promise<AppSettings> {
   const rows = await query<{ key: string; value: string }>("select key, value from settings");
   const raw = { ...DEFAULTS, ...Object.fromEntries(rows.map((r) => [r.key, r.value])) };
   return {
+    referralsEnabled: raw.referrals_enabled === "1",
     editWindowDays: Math.max(1, posInt(raw.edit_window_days, 3)),
     referralBonus: posInt(raw.referral_bonus, 100),
     referralUnlockDays: Math.max(1, posInt(raw.referral_unlock_days, 3)),

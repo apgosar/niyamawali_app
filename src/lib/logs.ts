@@ -189,10 +189,9 @@ export async function saveEntry(studentId: string, date: string, niyamId: number
     }
 
     // 2) referral bonus – unlocks once the new student has logged on enough days
-    const ref = await one<{ referrer_id: string }>(
-      "select referrer_id from referrals where referee_id = $1 and status = 'pending'",
-      [studentId],
-    );
+    const ref = settings.referralsEnabled
+      ? await one<{ referrer_id: string }>("select referrer_id from referrals where referee_id = $1 and status = 'pending'", [studentId])
+      : null; // programme is off: nothing is paid (pending referrals wait until it is turned back on)
     if (ref) {
       const days = await one<{ n: number }>(
         "select count(distinct log_date)::int as n from daily_logs where student_id = $1",

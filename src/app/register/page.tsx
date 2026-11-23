@@ -21,9 +21,9 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const { t } = await getT();
   const { ref } = await searchParams;
   const code = normalizeCode(ref);
-  const [referrer, settings, sangh, residence, village] = await Promise.all([
-    code ? findReferrer(code) : null,
-    getSettings(),
+  const settings = await getSettings();
+  const [referrer, sangh, residence, village] = await Promise.all([
+    code && settings.referralsEnabled ? findReferrer(code) : null,
     suggestions("sangh"),
     suggestions("residence"),
     suggestions("village"),
@@ -34,7 +34,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
       <BrandHeader title={t.register.title} subtitle={t.register.subtitle} />
       <RegisterForm
         refCode={referrer ? code : ""}
-        badRef={!!code && !referrer}
+        badRef={settings.referralsEnabled && !!code && !referrer}
         referrerName={referrer ? `${referrer.first_name} ${referrer.surname}` : null}
         bonus={settings.referralBonus}
         suggestions={{ sangh, residence, village }}

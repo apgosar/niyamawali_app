@@ -13,19 +13,20 @@ interface Props {
   earned: Record<string, string>;
   studentName: string;
   referralCode: string;
+  referralsEnabled: boolean;
   /** referral bonus (points each) and the number of logged days after which it is paid */
   bonus: number;
   days: number;
 }
 
-export function BadgeGrid({ earned, studentName, referralCode, bonus, days }: Props) {
+export function BadgeGrid({ earned, studentName, referralCode, referralsEnabled, bonus, days }: Props) {
   const { lang } = useI18n();
   const [open, setOpen] = useState<BadgeDef | null>(null);
 
   return (
     <>
       <ul className="grid grid-cols-3 gap-2.5">
-        {BADGES.map((b) => {
+        {BADGES.filter((b) => referralsEnabled || b.code !== "mitra" || !!earned[b.code]).map((b) => { // the referral badge is hidden while referrals are off (unless already earned)
           const got = !!earned[b.code];
           return (
             <li key={b.code}>
@@ -40,14 +41,14 @@ export function BadgeGrid({ earned, studentName, referralCode, bonus, days }: Pr
         })}
       </ul>
       {open && (
-        <BadgeModal badge={open} earnedOn={earned[open.code] ?? null} studentName={studentName} referralCode={referralCode} bonus={bonus} days={days} onClose={() => setOpen(null)} />
+        <BadgeModal badge={open} earnedOn={earned[open.code] ?? null} studentName={studentName} referralCode={referralCode} referralsEnabled={referralsEnabled} bonus={bonus} days={days} onClose={() => setOpen(null)} />
       )}
     </>
   );
 }
 
-function BadgeModal({ badge, earnedOn, studentName, referralCode, bonus, days, onClose }: {
-  badge: BadgeDef; earnedOn: string | null; studentName: string; referralCode: string; bonus: number; days: number; onClose: () => void;
+function BadgeModal({ badge, earnedOn, studentName, referralCode, referralsEnabled, bonus, days, onClose }: {
+  badge: BadgeDef; earnedOn: string | null; studentName: string; referralCode: string; referralsEnabled: boolean; bonus: number; days: number; onClose: () => void;
 }) {
   const { t, lang, f, n } = useI18n();
   const card = useRef<HTMLDivElement>(null);
@@ -62,11 +63,15 @@ function BadgeModal({ badge, earnedOn, studentName, referralCode, bonus, days, o
   async function share() {
     if (!picture.blob) return;
     setNote(null);
-    const text = [
-      f(t.badge.shareText, { name: badge.name[lang], desc: badge.desc[lang] }),
-      f(t.badge.inviteLine, { days: n(days), bonus: n(bonus) }),
-      `${window.location.origin}/register?ref=${referralCode}`,
-    ].join("\n");
+    // With referrals off the message carries no bonus promise and no personal invite code, just the app address.
+    const text = (referralsEnabled
+      ? [
+          f(t.badge.shareText, { name: badge.name[lang], desc: badge.desc[lang] }),
+          f(t.badge.inviteLine, { days: n(days), bonus: n(bonus) }),
+          `${window.location.origin}/register?ref=${referralCode}`,
+        ]
+      : [f(t.badge.shareText, { name: badge.name[lang], desc: badge.desc[lang] }), window.location.origin]
+    ).join("\n");
     try {
       const r = await shareImage(picture.blob, `niyamawali-badge-${badge.code}.png`, text);
       if (r === "downloaded") setNote(t.badge.saved);

@@ -1,4 +1,5 @@
 import { getDashboard } from "@/lib/admin-data";
+import { getSettings } from "@/lib/settings";
 import { monthLabel } from "@/lib/dates";
 
 export const metadata = { title: "Dashboard" };
@@ -31,6 +32,7 @@ function Bars({ data, label }: { data: { key: string; n: number; tip: string }[]
 
 export default async function Dashboard() {
   const d = await getDashboard();
+  const referralsOn = (await getSettings()).referralsEnabled;
   const maxRate = Math.max(1, ...d.niyamRates.map((r) => r.n));
   const maxSangh = Math.max(1, ...d.bySangh.map((s) => s.points));
 
@@ -41,8 +43,10 @@ export default async function Dashboard() {
         <Stat label="Active today" value={d.activeToday} />
         <Stat label="Active this month" value={d.activeThisMonth} hint={d.totalStudents ? `${Math.round((d.activeThisMonth / d.totalStudents) * 100)}% of students` : undefined} />
         <Stat label="Points this month" value={d.pointsThisMonth.toLocaleString("en-IN")} hint={`avg ${d.avgPointsPerActive} per active student`} />
-        <Stat label="Referrals rewarded" value={d.referralsAwarded} />
-        <Stat label="Referrals pending" value={d.referralsPending} hint="waiting for logged days" />
+        {(referralsOn || d.referralsAwarded + d.referralsPending > 0) && (<>
+          <Stat label="Referrals rewarded" value={d.referralsAwarded} />
+          <Stat label="Referrals pending" value={d.referralsPending} hint={referralsOn ? "waiting for logged days" : "paused: referrals are OFF"} />
+        </>)}
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">

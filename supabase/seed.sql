@@ -51,6 +51,7 @@ where n.sort_order = 12
 
 insert into settings (key, value) values
   ('edit_window_days',    '3'),
+  ('referrals_enabled',   '0'),
   ('referral_bonus',      '100'),
   ('referral_unlock_days','3'),
   ('streak_bonuses',      '7:50,21:100,51:200,108:500'),

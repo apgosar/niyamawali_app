@@ -75,7 +75,7 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
   **Student ID** like `26-M-00001` (joining year + gender M/F + running number; students who registered before gender was asked keep the older form `26-00001`), shown on the Today and Profile screens so they can quote it to the admin.
 - **Rankings are admin-only.** Students see only their own points. Once a month has ended, the admin shares the result
   (see below) and students open the link to see the top 3, their own points and rank, and a button for their certificate.
-- **Referral:** Profile → Invite friends. Shares a link like `/register?ref=ABC123` (WhatsApp / share sheet / copy).
+- **Referral** (can be switched **on / off** under Admin → Settings → *Referral programme*; it is OFF by default): Profile → Invite friends. Shares a link like `/register?ref=ABC123` (WhatsApp / share sheet / copy).
   The new student sees “Invited by ‹name›”. Once the new student has logged on 3 different days, **both** get 100
   bonus points (amount and days are admin settings).
 - **Gamification:** day streak 🪔 with milestone bonuses (7/21/51/108 days → 50/100/200/500 points by default),
@@ -103,7 +103,7 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
   days — even submitted ones — until the time is up. Active unlocks are listed and can be locked again at any time. Defaults are in Settings.
 - **Leaderboard** (admin-only rankings): for a finished month, *Share on WhatsApp* sends a picture of the top 3 (photos + names) with a
   message and a link to `/results/YYYY-MM`; *Download picture* and *Copy message* are there for desktops.
-- **Settings** (edit window, referral bonus/unlock days, streak bonuses), **Admins** (add teachers,
+- **Settings** (referral programme on/off, edit window, referral bonus/unlock days, streak bonuses), **Admins** (add teachers,
   change password).
 
 **Privacy & safety**
@@ -160,3 +160,11 @@ It is safe to run repeatedly. Existing students are numbered in the order they j
   day, with 🔒 for submitted days — plus a day-by-day list with exact values and the time each entry was last changed. CSV export for both.
 
 Version 3 adds three columns (gender, standard, previous shibirs): run `npm run db:migrate` before deploying (safe to repeat).
+## 8. Turning referrals off and on
+
+Admin → **Settings** → tick or untick **Referral programme** → *Save settings*. It starts **off**.
+
+- **Off:** students do not see the *Invite friends* card or the “Kalyan Mitra” badge, badge share messages carry no bonus promise or invite code,
+  old `?ref=` links just open the normal registration form (nobody is linked as a referrer), and no referral bonus is paid.
+- Referrals already made are kept and bonuses already paid stay. Referrals still waiting for their logged days are **paused** and are paid
+  on the student’s next saved entry once you turn it back **on**.

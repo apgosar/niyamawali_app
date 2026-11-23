@@ -186,6 +186,7 @@ export async function deleteDonor(fd: FormData) {
 
 export async function saveSettingsAction(_prev: ActionState | null, fd: FormData): Promise<ActionState> {
   await requireAdmin();
+  const referralsOn = fd.get("referrals_enabled") === "on";
   const edit = int(fd, "edit_window_days");
   const bonus = int(fd, "referral_bonus");
   const unlock = int(fd, "referral_unlock_days");
@@ -200,6 +201,7 @@ export async function saveSettingsAction(_prev: ActionState | null, fd: FormData
   const parsed = parseStreakBonuses(streaks);
   if (streaks && !parsed.length) return { error: "Streak bonuses look like 7:50,21:100 (days:points, comma separated)." };
   await saveSettings({
+    referrals_enabled: referralsOn ? "1" : "0",
     edit_window_days: String(edit),
     referral_bonus: String(bonus),
     referral_unlock_days: String(unlock),
@@ -208,7 +210,7 @@ export async function saveSettingsAction(_prev: ActionState | null, fd: FormData
     grant_default_hours: String(gHours),
   });
   revalidatePath("/admin/settings");
-  return { ok: "Settings saved." };
+  return { ok: referralsOn ? "Settings saved. Referrals are ON." : "Settings saved. Referrals are OFF." };
 }
 
 export async function addAdmin(_prev: ActionState | null, fd: FormData): Promise<ActionState> {

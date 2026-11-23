@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { one, tx } from "@/lib/db";
 import { hashPin, isValidPin, startStudentSession } from "@/lib/auth";
 import { generateUniqueCode, findReferrer } from "@/lib/referrals";
+import { getSettings } from "@/lib/settings";
 import { deletePhoto, savePhoto } from "@/lib/storage";
 import { MAX_PHOTO_BYTES, parseDetails, parseIdentity, type FieldErrors } from "@/lib/validation";
 import { studentCodeSql } from "@/lib/student-code";
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
   }
 
   const refCode = typeof fd.get("ref") === "string" ? (fd.get("ref") as string) : "";
-  const referrer = refCode ? await findReferrer(refCode) : null;
+  const referrer = refCode && (await getSettings()).referralsEnabled ? await findReferrer(refCode) : null;
   const code = await generateUniqueCode();
   const pinHash = await hashPin(pin as string);
 

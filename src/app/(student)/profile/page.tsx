@@ -39,11 +39,13 @@ export default async function ProfilePage() {
         <section className="card p-4">
           <h2 className="text-lg font-bold text-gold-700">{t.profile.badges}</h2>
           <p className="hint mb-3">{t.profile.badgesHint}</p>
-          <BadgeGrid earned={earnedMap} studentName={name} referralCode={student.referral_code} bonus={settings.referralBonus} days={settings.referralUnlockDays} />
+          <BadgeGrid earned={earnedMap} studentName={name} referralCode={student.referral_code} referralsEnabled={settings.referralsEnabled} bonus={settings.referralBonus} days={settings.referralUnlockDays} />
         </section>
 
-        <ReferralCard code={student.referral_code} bonus={settings.referralBonus} days={settings.referralUnlockDays}
-          referrals={referrals.map((r) => ({ name: `${r.first_name} ${r.surname}`, status: r.status }))} />
+        {settings.referralsEnabled && (
+          <ReferralCard code={student.referral_code} bonus={settings.referralBonus} days={settings.referralUnlockDays}
+            referrals={referrals.map((r) => ({ name: `${r.first_name} ${r.surname}`, status: r.status }))} />
+        )}
 
         <InstallCard />
 
