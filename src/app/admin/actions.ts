@@ -188,8 +188,9 @@ export async function saveSettingsAction(_prev: ActionState | null, fd: FormData
   await requireAdmin();
   const referralsOn = fd.get("referrals_enabled") === "on";
   const edit = int(fd, "edit_window_days");
-  const bonus = int(fd, "referral_bonus");
-  const unlock = int(fd, "referral_unlock_days");
+  // the two referral fields are disabled (not sent) while referrals are off: keep what is stored
+  const bonus = referralsOn ? int(fd, "referral_bonus") : 0;
+  const unlock = referralsOn ? int(fd, "referral_unlock_days") : 1;
   const streaks = s(fd, "streak_bonuses", 200);
   const gDays = int(fd, "grant_default_days");
   const gHours = int(fd, "grant_default_hours");
@@ -203,8 +204,7 @@ export async function saveSettingsAction(_prev: ActionState | null, fd: FormData
   await saveSettings({
     referrals_enabled: referralsOn ? "1" : "0",
     edit_window_days: String(edit),
-    referral_bonus: String(bonus),
-    referral_unlock_days: String(unlock),
+    ...(referralsOn ? { referral_bonus: String(bonus), referral_unlock_days: String(unlock) } : {}),
     streak_bonuses: parsed.map((b) => `${b.days}:${b.points}`).join(","),
     grant_default_days: String(gDays),
     grant_default_hours: String(gHours),

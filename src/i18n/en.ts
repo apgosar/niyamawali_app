@@ -71,6 +71,7 @@ export const en = {
     title: "My progress", calendar: "Daily points", months: "Month by month", certificate: "Certificate",
     certificateHint: "Available after the month ends", noData: "Your progress will appear here.",
     best: "Best day", activeDays: "Active days", total: "Total",
+    niyamPoints: "Niyam points", bonusPoints: "Bonus points",
   },
   profile: {
     title: "My profile", badges: "Badges", badgesHint: "Earn badges as you keep going", locked: "Locked",

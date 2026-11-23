@@ -162,7 +162,8 @@ It is safe to run repeatedly. Existing students are numbered in the order they j
 Version 3 adds three columns (gender, standard, previous shibirs): run `npm run db:migrate` before deploying (safe to repeat).
 ## 8. Turning referrals off and on
 
-Admin → **Settings** → tick or untick **Referral programme** → *Save settings*. It starts **off**.
+Admin → **Settings** → slide **Referral programme** on or off → *Save settings*. It starts **off**. While it is off, the referral bonus and
+unlock-days fields are greyed out (their saved values are kept).
 
 - **Off:** students do not see the *Invite friends* card or the “Kalyan Mitra” badge, badge share messages carry no bonus promise or invite code,
   old `?ref=` links just open the normal registration form (nobody is linked as a referrer), and no referral bonus is paid.
@@ -177,3 +178,8 @@ and **added to the list** for the next student. Capitals and spacing never creat
 
 The list is the `villages` table. It starts with the 94 villages supplied (`supabase/migrations/0004_villages.sql`) plus any village existing
 students have already entered. Run `npm run db:migrate` before deploying (safe to repeat).
+
+## 10. Niyam vs bonus points
+
+Admin → a student → **Month by month** shows Days, **Niyam** points, **Bonus** points and Total for each month (with an all-time row). Students see the same split on
+their Progress page whenever the month has bonus points.

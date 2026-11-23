@@ -17,7 +17,8 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
   const [days, monthly] = await Promise.all([getMonthDays(student.id, month), getMonthlyTotals(student.id)]);
   const values = Object.values(days);
   const max = Math.max(1, ...values);
-  const total = monthly.find((x) => x.month === month)?.total ?? 0;
+  const thisMonth = monthly.find((x) => x.month === month);
+  const total = thisMonth?.total ?? 0;
   const active = values.length;
   const best = values.length ? Math.max(...values) : 0;
   const lead = weekday(monthRange(month)[0]);
@@ -53,6 +54,11 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
             </div>
           ))}
         </div>
+        {(thisMonth?.bonus ?? 0) !== 0 && (
+          <p className="mt-2 text-center text-sm text-muted">
+            {t.progress.niyamPoints} <b className="num text-gold-900">{thisMonth?.niyam ?? 0}</b> + {t.progress.bonusPoints} <b className="num text-sage-700">{thisMonth?.bonus ?? 0}</b>
+          </p>
+        )}
       </header>
 
       <main className="space-y-5 px-4 pt-5">
@@ -82,7 +88,10 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
               const closed = row.month < current;
               return (
                 <li key={row.month} className="flex items-center justify-between gap-2 py-2.5">
-                  <Link href={`/progress?m=${row.month}`} replace className="flex-1 font-semibold">{monthLabel(row.month, lang)}</Link>
+                  <Link href={`/progress?m=${row.month}`} replace className="flex-1 font-semibold">
+                    {monthLabel(row.month, lang)}
+                    {row.bonus !== 0 && <span className="block text-[11px] font-normal text-muted">{row.niyam} + {row.bonus} {t.progress.bonusPoints}</span>}
+                  </Link>
                   <span className="num text-xl text-gold-900">{row.total}</span>
                   {closed ? (
                     <a href={`/certificate/${row.month}`} className="rounded-full border border-gold-300 px-3 py-1 text-xs font-semibold text-gold-700">🏅 {t.progress.certificate}</a>

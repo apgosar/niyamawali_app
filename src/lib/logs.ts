@@ -301,12 +301,13 @@ export async function getMonthDays(studentId: string, month: string): Promise<Re
 }
 
 /** Months in which the student has any points, newest first, with totals. */
-export async function getMonthlyTotals(studentId: string): Promise<{ month: string; total: number }[]> {
+/** Points per month, split into niyam points (daily logs) and bonus points; total = niyam + bonus. */
+export async function getMonthlyTotals(studentId: string): Promise<{ month: string; total: number; niyam: number; bonus: number }[]> {
   return query(
-    `select month, sum(p)::int as total from (
-        select to_char(log_date, 'YYYY-MM') as month, points as p from daily_logs where student_id = $1
+    `select month, sum(n)::int as niyam, sum(b)::int as bonus, sum(n + b)::int as total from (
+        select to_char(log_date, 'YYYY-MM') as month, points as n, 0 as b from daily_logs where student_id = $1
         union all
-        select to_char(awarded_on, 'YYYY-MM'), points from bonus_points where student_id = $1
+        select to_char(awarded_on, 'YYYY-MM'), 0, points from bonus_points where student_id = $1
      ) x group by month order by month desc`,
     [studentId],
   );

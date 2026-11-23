@@ -80,24 +80,24 @@ export function DonorForm({ defaults }: { defaults: { month: string } }) {
 
 export function SettingsForm({ values }: { values: Record<string, string> }) {
   const [state, action, pending] = useActionState(saveSettingsAction, null);
+  const [referrals, setReferrals] = useState(values.referrals_enabled === "1");
   return (
     <form action={action} className="space-y-4">
-      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-gold-300 bg-gold-50 p-4">
-        <input type="checkbox" name="referrals_enabled" defaultChecked={values.referrals_enabled === "1"} className="mt-1 h-6 w-6 shrink-0 accent-[#b8862b]" />
-        <span>
-          <span className="block text-base font-bold text-gold-700">Referral programme</span>
-          <span className="mt-0.5 block text-sm text-ink">Tick to turn referrals <b>on</b>; untick to turn them <b>off</b>. When off: students do not see the invite card or
-            share a referral link, invite links stop working as invites (the person can still register normally), and no referral bonus is paid.
-            Referrals already made are kept; pending ones are paid after you turn it back on.</span>
-        </span>
-      </label>
+      <div className="flex items-center justify-between gap-3 rounded-2xl border border-gold-300 bg-gold-50 px-4 py-3">
+        <span id="ref-label" className="text-base font-bold text-gold-700">Referral programme</span>
+        <button type="button" role="switch" aria-checked={referrals} aria-labelledby="ref-label" onClick={() => setReferrals((v) => !v)}
+          className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${referrals ? "bg-sage-600" : "bg-gold-200"}`}>
+          <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all ${referrals ? "left-7" : "left-1"}`} />
+        </button>
+        {referrals && <input type="hidden" name="referrals_enabled" value="on" />}
+      </div>
       <div><label className="label" htmlFor="edit_window_days">Edit window (days)</label>
         <input id="edit_window_days" name="edit_window_days" type="number" min={1} max={31} defaultValue={values.edit_window_days} className="field" />
         <p className="hint">Students can log today and the previous (N − 1) days. Default 3.</p></div>
-      <div><label className="label" htmlFor="referral_bonus">Referral bonus (points each)</label>
-        <input id="referral_bonus" name="referral_bonus" type="number" min={0} defaultValue={values.referral_bonus} className="field" /></div>
-      <div><label className="label" htmlFor="referral_unlock_days">Referral unlocks after (days logged)</label>
-        <input id="referral_unlock_days" name="referral_unlock_days" type="number" min={1} defaultValue={values.referral_unlock_days} className="field" />
+      <div className={referrals ? "" : "opacity-50"}><label className="label" htmlFor="referral_bonus">Referral bonus (points each)</label>
+        <input id="referral_bonus" name="referral_bonus" type="number" min={0} defaultValue={values.referral_bonus} className="field" disabled={!referrals} /></div>
+      <div className={referrals ? "" : "opacity-50"}><label className="label" htmlFor="referral_unlock_days">Referral unlocks after (days logged)</label>
+        <input id="referral_unlock_days" name="referral_unlock_days" type="number" min={1} defaultValue={values.referral_unlock_days} className="field" disabled={!referrals} />
         <p className="hint">The new student must log on this many different days before both get the bonus.</p></div>
       <div><label className="label" htmlFor="streak_bonuses">Streak bonuses</label>
         <input id="streak_bonuses" name="streak_bonuses" defaultValue={values.streak_bonuses} className="field" placeholder="7:50,21:100,51:200,108:500" />

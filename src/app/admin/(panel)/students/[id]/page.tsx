@@ -110,10 +110,11 @@ export default async function StudentDetail({ params }: { params: Promise<{ id: 
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="card p-4">
           <h2 className="mb-2 text-lg font-bold text-gold-700">Month by month</h2>
-          <table className="w-full text-sm"><thead className="text-xs uppercase text-muted"><tr><th className="py-1 text-left">Month</th><th className="text-right">Days</th><th className="text-right">Points</th></tr></thead>
+          <table className="w-full text-sm"><thead className="text-xs uppercase text-muted"><tr><th className="py-1 text-left">Month</th><th className="text-right">Days</th><th className="text-right">Niyam</th><th className="text-right">Bonus</th><th className="text-right">Total</th></tr></thead>
             <tbody className="divide-y divide-gold-100">
-              {months.map((m) => <tr key={m.month}><td className="py-2"><Link href={`/admin/students/${id}/entries?month=${m.month}`} className="font-semibold text-gold-700 hover:underline">{monthLabel(m.month, "en")}</Link></td><td className="text-right tabular-nums">{m.days}</td><td className="text-right font-bold tabular-nums">{m.total}</td></tr>)}
-              {months.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-muted">No activity yet.</td></tr>}
+              {months.map((m) => <tr key={m.month}><td className="py-2"><Link href={`/admin/students/${id}/entries?month=${m.month}`} className="font-semibold text-gold-700 hover:underline">{monthLabel(m.month, "en")}</Link></td><td className="text-right tabular-nums">{m.days}</td><td className="text-right tabular-nums">{m.niyam}</td><td className="text-right tabular-nums text-sage-700">{m.bonus}</td><td className="text-right font-bold tabular-nums">{m.total}</td></tr>)}
+              {months.length > 1 && <tr className="font-bold"><td className="py-2">All time</td><td className="text-right tabular-nums">{months.reduce((a, m) => a + m.days, 0)}</td><td className="text-right tabular-nums">{months.reduce((a, m) => a + m.niyam, 0)}</td><td className="text-right tabular-nums text-sage-700">{months.reduce((a, m) => a + m.bonus, 0)}</td><td className="text-right tabular-nums">{months.reduce((a, m) => a + m.total, 0)}</td></tr>}
+              {months.length === 0 && <tr><td colSpan={5} className="py-4 text-center text-muted">No activity yet.</td></tr>}
             </tbody></table>
         </section>
 

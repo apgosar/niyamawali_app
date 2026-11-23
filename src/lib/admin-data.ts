@@ -277,10 +277,10 @@ export async function getStudentDetail(id: string) {
   );
   if (!s) return null;
   const [months, badges, referrals, bonuses, recent, submitted] = await Promise.all([
-    query<{ month: string; total: number; days: number }>(
-      `select month, sum(p)::int as total, count(distinct d)::int as days from (
-          select to_char(log_date,'YYYY-MM') as month, points as p, log_date as d from daily_logs where student_id = $1
-          union all select to_char(awarded_on,'YYYY-MM'), points, null from bonus_points where student_id = $1
+    query<{ month: string; total: number; niyam: number; bonus: number; days: number }>(
+      `select month, sum(n)::int as niyam, sum(b)::int as bonus, sum(n + b)::int as total, count(distinct d)::int as days from (
+          select to_char(log_date,'YYYY-MM') as month, points as n, 0 as b, log_date as d from daily_logs where student_id = $1
+          union all select to_char(awarded_on,'YYYY-MM'), 0, points, null from bonus_points where student_id = $1
        ) x group by month order by month desc`,
       [id],
     ),

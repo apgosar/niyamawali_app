@@ -73,6 +73,7 @@ export const gu: Dict = {
     title: "મારી પ્રગતિ", calendar: "રોજના પોઇન્ટ", months: "મહિના મુજબ", certificate: "પ્રમાણપત્ર",
     certificateHint: "મહિનો પૂરો થયા પછી મળશે", noData: "તમારી પ્રગતિ અહીં દેખાશે.",
     best: "શ્રેષ્ઠ દિવસ", activeDays: "સક્રિય દિવસ", total: "કુલ",
+    niyamPoints: "નિયમ પોઇન્ટ", bonusPoints: "બોનસ પોઇન્ટ",
   },
   profile: {
     title: "મારી પ્રોફાઇલ", badges: "બૅજ", badgesHint: "આગળ વધતા રહો અને બૅજ મેળવો", locked: "બંધ",
