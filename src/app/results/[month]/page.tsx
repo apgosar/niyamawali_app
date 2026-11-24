@@ -4,7 +4,7 @@ import { requireStudent } from "@/lib/auth";
 import { getT } from "@/lib/lang";
 import { fmt } from "@/i18n";
 import { isValidMonth, monthLabel, monthOf, todayIST } from "@/lib/dates";
-import { awardTop10, donorFor, monthlyLeaderboard } from "@/lib/leaderboard";
+import { awardTop10, currentDonor, monthlyLeaderboard } from "@/lib/leaderboard";
 import { FitToWidth } from "@/components/FitToWidth";
 import { TopThreeCard } from "@/components/TopThreeCard";
 import { LangToggle } from "@/components/LangToggle";
@@ -30,7 +30,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ month:
 
   if (closed) {
     await awardTop10(month); // hand out the Top-10 badge for the closed month (safe to repeat)
-    const [rows, donor] = await Promise.all([monthlyLeaderboard(month, 100000), donorFor(month)]);
+    const [rows, donor] = await Promise.all([monthlyLeaderboard(month, 100000), currentDonor()]);
     total = rows.length;
     top = rows.filter((r) => r.rank <= 3).slice(0, 5).map((r) => ({ rank: r.rank, name: `${r.first_name} ${r.surname}`, photoKey: r.photo_key }));
     const me = rows.find((r) => r.id === student.id);

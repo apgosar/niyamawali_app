@@ -64,7 +64,7 @@ export const en = {
   },
   board: {
     title: "Leaderboard", thisMonth: "This month", lastMonth: "Last month", yourRank: "Your rank",
-    empty: "No points yet this month. Be the first!", pointsSuffix: "pts", sponsorTitle: "This month's sponsor",
+    empty: "No points yet this month. Be the first!", pointsSuffix: "pts", sponsorTitle: "Donor",
     notRanked: "Log a niyam to enter the leaderboard",
   },
   progress: {

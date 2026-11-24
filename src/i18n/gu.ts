@@ -61,12 +61,12 @@ export const gu: Dict = {
     saved: "સેવ થયું ✓", saving: "સેવ થઈ રહ્યું છે…", queued: "ઑનલાઇન થતાં સેવ થશે", locked: "આ દિવસ બંધ છે",
     editHint: "દિવસ સબમિટ ન કરો ત્યાં સુધી તમે આજે અને છેલ્લા {n} દિવસ સુધી ફેરફાર કરી શકો છો. સબમિટ કરેલો દિવસ બંધ થઈ જાય છે.", todayLabel: "આજે", yesterday: "ગઈકાલે",
     gathas: "ગાથા", perGatha: "દરેકના {n}", hello: "જય જિનેન્દ્ર", newBadge: "નવો બૅજ: {name}", bonus: "બોનસ +{n} પોઇન્ટ!",
-    sponsored: "આ મહિનાના દાતા", top: "ઉપર જાઓ", total: "આજે", editing: "ફેરફાર", noNiyams: "હજી કોઈ નિયમ ઉમેર્યા નથી.",
+    sponsored: "દાતા", top: "ઉપર જાઓ", total: "આજે", editing: "ફેરફાર", noNiyams: "હજી કોઈ નિયમ ઉમેર્યા નથી.",
     dayPoints: "આજે {n} પોઇન્ટ",
   },
   board: {
     title: "લીડરબોર્ડ", thisMonth: "આ મહિને", lastMonth: "ગયા મહિને", yourRank: "તમારો રેન્ક",
-    empty: "આ મહિને હજી કોઈ પોઇન્ટ નથી. પહેલા બનો!", pointsSuffix: "પોઇન્ટ", sponsorTitle: "આ મહિનાના દાતા",
+    empty: "આ મહિને હજી કોઈ પોઇન્ટ નથી. પહેલા બનો!", pointsSuffix: "પોઇન્ટ", sponsorTitle: "દાતા",
     notRanked: "લીડરબોર્ડમાં આવવા એક નિયમ નોંધો",
   },
   progress: {

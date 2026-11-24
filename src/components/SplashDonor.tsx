@@ -1,12 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 import { getT } from "@/lib/lang";
-import { monthOf, todayIST } from "@/lib/dates";
-import { donorFor } from "@/lib/leaderboard";
+import { currentDonor } from "@/lib/leaderboard";
 
-/** This month's donor, shown inside the opening screen. Renders nothing when there is no donor. */
+/** The current donor, shown inside the opening screen. Renders nothing when there is no donor. */
 export async function SplashDonor() {
   const { lang, t } = await getT();
-  const donor = await donorFor(monthOf(todayIST()));
+  const donor = await currentDonor();
   if (!donor) return null;
   const message = (lang === "gu" ? donor.message_gu : donor.message_en) || donor.message_gu || donor.message_en;
   return (

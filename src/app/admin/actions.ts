@@ -10,7 +10,7 @@ import {
 import { deletePhoto, savePhoto } from "@/lib/storage";
 import { saveSettings } from "@/lib/settings";
 import { parseStreakBonuses } from "@/lib/streaks";
-import { todayIST, isValidMonth, fmtIST } from "@/lib/dates";
+import { todayIST, fmtIST } from "@/lib/dates";
 import { grantEdit, revokeGrant } from "@/lib/grants";
 import { addNiyamRow, EditError, saveNiyamEdits, type NiyamEdit, type OptionEdit } from "@/lib/niyams-admin";
 
@@ -147,39 +147,36 @@ export async function addNiyamAction(_prev: ActionState | null, fd: FormData): P
 
 export async function saveDonor(_prev: ActionState | null, fd: FormData): Promise<ActionState> {
   await requireAdmin();
-  const month = s(fd, "month", 7);
   const name = s(fd, "name", 120);
-  if (!isValidMonth(month)) return { error: "Pick a month." };
   if (!name) return { error: "Enter the donor's name." };
-  const existing = await one<{ photo_key: string | null }>("select photo_key from donors where month = $1", [month]);
-  let photoKey = existing?.photo_key ?? null;
+  let photoKey: string | null = null;
   const file = fd.get("photo");
   if (file instanceof File && file.size > 0) {
     if (file.size > 5 * 1024 * 1024) return { error: "Photo is too large (max 5 MB)." };
     try {
-      const key = await savePhoto(Buffer.from(await file.arrayBuffer()), "donors");
-      await deletePhoto(photoKey);
-      photoKey = key;
+      photoKey = await savePhoto(Buffer.from(await file.arrayBuffer()), "donors");
     } catch {
       return { error: "That file is not a valid image." };
     }
   }
+  // a new donor is added on top: the most recently added donor is the one students see
   await query(
-    `insert into donors (month, name, photo_key, message_gu, message_en) values ($1,$2,$3,$4,$5)
-     on conflict (month) do update set name = excluded.name, photo_key = excluded.photo_key,
-       message_gu = excluded.message_gu, message_en = excluded.message_en`,
-    [month, name, photoKey, s(fd, "message_gu", 240) || null, s(fd, "message_en", 240) || null],
+    "insert into donors (name, photo_key, message_gu, message_en) values ($1,$2,$3,$4)",
+    [name, photoKey, s(fd, "message_gu", 240) || null, s(fd, "message_en", 240) || null],
   );
   revalidatePath("/admin/donors");
-  return { ok: `Donor saved for ${month}.` };
+  revalidatePath("/", "layout");
+  return { ok: "Donor added. Students now see this donor." };
 }
 
 export async function deleteDonor(fd: FormData) {
   await requireAdmin();
-  const month = s(fd, "month", 7);
-  const d = await one<{ photo_key: string | null }>("delete from donors where month = $1 returning photo_key", [month]);
+  const id = Number(s(fd, "id", 12));
+  if (!Number.isInteger(id)) return;
+  const d = await one<{ photo_key: string | null }>("delete from donors where id = $1 returning photo_key", [id]);
   await deletePhoto(d?.photo_key);
   revalidatePath("/admin/donors");
+  revalidatePath("/", "layout");
 }
 
 /* ---------------- settings & admins ---------------- */

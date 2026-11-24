@@ -71,9 +71,10 @@ for (let i = 0; i < 40; i++) {
 }
 
 await query(
-  `insert into donors (month, name, message_gu, message_en) values ($1, 'Shri Mahendrabhai Gala Parivar', 'આ મહિનાના નિયમ દાતા તરફથી', 'Niyams of this month sponsored with devotion')
-   on conflict (month) do nothing`,
-  [today.slice(0, 7)],
+  `insert into donors (name, message_gu, message_en)
+   select 'Shri Mahendrabhai Gala Parivar', 'નિયમ દાતા તરફથી', 'Sponsored with devotion'
+   where not exists (select 1 from donors)`,
+  [],
 );
 console.log("Demo data ready. Demo students use PIN 1234 and phones starting 98200…");
 process.exit(0);

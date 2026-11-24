@@ -149,7 +149,7 @@ It is safe to run repeatedly. Existing students are numbered in the order they j
 
 ## 7. Opening screen, new registration fields, daily entries
 
-- **Opening screen:** when the app is opened, the Shibir logo and this month’s donor (name, photo, message from *Admin → Donors*) are shown for
+- **Opening screen:** when the app is opened, the Shibir logo and the current donor (name, photo, message from *Admin → Donors*) are shown for
   about 4.5 seconds, once per app launch (tap after 2 s to skip). Admin pages never show it. Donor photos are public so they can appear before
   login; student photos stay private.
 - **Registration** also asks for **gender** (M/F, part of the Student ID and fixed once set), **current standard** (1st – 15th) and a

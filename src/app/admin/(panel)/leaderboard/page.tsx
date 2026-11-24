@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { monthOf, monthLabel, todayIST, isValidMonth, addMonths } from "@/lib/dates";
-import { awardTop10, donorFor, monthlyLeaderboard } from "@/lib/leaderboard";
+import { awardTop10, currentDonor, monthlyLeaderboard } from "@/lib/leaderboard";
 import { Avatar } from "@/components/Avatar";
 import { ShareResults } from "./ShareResults";
 
@@ -12,7 +12,7 @@ export default async function AdminLeaderboard({ searchParams }: { searchParams:
   const month = m && isValidMonth(m) ? m : cur;
   const closed = month < cur;
   if (closed) await awardTop10(month);
-  const [rows, donor] = await Promise.all([monthlyLeaderboard(month, 200), donorFor(month)]);
+  const [rows, donor] = await Promise.all([monthlyLeaderboard(month, 200), currentDonor()]);
   const top = rows.filter((r) => r.rank <= 3).slice(0, 5).map((r) => ({ rank: r.rank, name: `${r.first_name} ${r.surname}`, photoKey: r.photo_key }));
 
   return (

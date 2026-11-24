@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireStudent } from "@/lib/auth";
 import { getT } from "@/lib/lang";
 import { isValidMonth, monthLabel, monthOf, todayIST } from "@/lib/dates";
-import { donorFor, monthlyLeaderboard } from "@/lib/leaderboard";
+import { currentDonor, monthlyLeaderboard } from "@/lib/leaderboard";
 import { CertificateView } from "./CertificateView";
 
 export const metadata = { title: "Certificate" };
@@ -15,7 +15,7 @@ export default async function CertificatePage({ params }: { params: Promise<{ mo
   if (!isValidMonth(month)) notFound();
   const closed = month < monthOf(todayIST());
 
-  const [rows, donor] = closed ? await Promise.all([monthlyLeaderboard(month, 100000), donorFor(month)]) : [[], null];
+  const [rows, donor] = closed ? await Promise.all([monthlyLeaderboard(month, 100000), currentDonor()]) : [[], null];
   const mine = rows.find((r) => r.id === student.id);
 
   return (

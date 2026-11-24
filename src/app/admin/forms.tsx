@@ -60,20 +60,18 @@ export function BonusForm({ id }: { id: string }) {
   );
 }
 
-export function DonorForm({ defaults }: { defaults: { month: string } }) {
+export function DonorForm() {
   const [state, action, pending] = useActionState(saveDonor, null);
   return (
     <form action={action} className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        <div><label className="label" htmlFor="month">Month</label><input id="month" name="month" type="month" defaultValue={defaults.month} className="field" required /></div>
         <div><label className="label" htmlFor="name">Donor name</label><input id="name" name="name" className="field" maxLength={120} required /></div>
         <div><label className="label" htmlFor="message_gu">Message (Gujarati)</label><input id="message_gu" name="message_gu" className="field" maxLength={240} /></div>
         <div><label className="label" htmlFor="message_en">Message (English)</label><input id="message_en" name="message_en" className="field" maxLength={240} /></div>
       </div>
       <div><label className="label" htmlFor="photo">Photo / logo (optional)</label><input id="photo" name="photo" type="file" accept="image/*" className="field py-2" /></div>
-      <p className="hint">Saving a month that already has a donor replaces it.</p>
       <Msg s={state} />
-      <button className="btn btn-gold" disabled={pending}>{pending ? "Saving…" : "Save donor"}</button>
+      <button className="btn btn-gold" disabled={pending}>{pending ? "Saving…" : "Add donor"}</button>
     </form>
   );
 }

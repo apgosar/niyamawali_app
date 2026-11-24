@@ -1,8 +1,8 @@
 import { requireStudent } from "@/lib/auth";
 import { getT } from "@/lib/lang";
-import { addDays, monthOf, todayIST } from "@/lib/dates";
+import { addDays, todayIST } from "@/lib/dates";
 import { getAccess, getDayEntries, getNiyams, getTotals } from "@/lib/logs";
-import { donorFor } from "@/lib/leaderboard";
+import { currentDonor } from "@/lib/leaderboard";
 import { TodayClient } from "./TodayClient";
 
 export const metadata = { title: "Today" };
@@ -15,7 +15,7 @@ export default async function TodayPage() {
     getNiyams(),
     getDayEntries(student.id, today),
     getTotals(student.id, today, today),
-    donorFor(monthOf(today)),
+    currentDonor(),
     getAccess(student.id, today),
   ]);
 
