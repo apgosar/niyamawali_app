@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
 import { getT } from "@/lib/lang";
-import { getBadges } from "@/lib/logs";
 import { referralsOf } from "@/lib/referrals";
 import { getSettings } from "@/lib/settings";
 import { Avatar } from "@/components/Avatar";
@@ -9,7 +8,6 @@ import { LinkSpinner } from "@/components/LinkSpinner";
 import { LangToggle } from "@/components/LangToggle";
 import { fmt } from "@/i18n";
 import { ReferralCard } from "./ReferralCard";
-import { BadgeGrid } from "./BadgeGrid";
 import { InstallCard, LogoutButton } from "./ProfileActions";
 
 export const metadata = { title: "Profile" };
@@ -17,8 +15,7 @@ export const metadata = { title: "Profile" };
 export default async function ProfilePage() {
   const student = await requireStudent();
   const { t, lang } = await getT();
-  const [earned, referrals, settings] = await Promise.all([getBadges(student.id), referralsOf(student.id), getSettings()]);
-  const earnedMap = Object.fromEntries(earned.map((b) => [b.badge_code, b.earned_on]));
+  const [referrals, settings] = await Promise.all([referralsOf(student.id), getSettings()]);
   const name = `${student.first_name} ${student.surname}`;
   const since = new Date(student.created_at).toLocaleDateString(lang === "gu" ? "gu-IN" : "en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 
@@ -36,12 +33,6 @@ export default async function ProfilePage() {
       </header>
 
       <main className="space-y-5 px-4 pt-5">
-        <section id="badges" className="card scroll-mt-[calc(var(--sat)+1rem)] p-4">
-          <h2 className="text-lg font-bold text-gold-700">{t.profile.badges}</h2>
-          <p className="hint mb-3">{t.profile.badgesHint}</p>
-          <BadgeGrid earned={earnedMap} studentName={name} referralCode={student.referral_code} referralsEnabled={settings.referralsEnabled} bonus={settings.referralBonus} days={settings.referralUnlockDays} />
-        </section>
-
         {settings.referralsEnabled && (
           <ReferralCard code={student.referral_code} bonus={settings.referralBonus} days={settings.referralUnlockDays}
             referrals={referrals.map((r) => ({ name: `${r.first_name} ${r.surname}`, status: r.status }))} />

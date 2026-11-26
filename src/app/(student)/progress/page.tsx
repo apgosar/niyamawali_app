@@ -2,7 +2,9 @@ import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
 import { getT } from "@/lib/lang";
 import { addMonths, daysInMonth, monthLabel, monthOf, monthRange, todayIST, weekday, isValidMonth } from "@/lib/dates";
-import { getMonthDays, getMonthlyTotals } from "@/lib/logs";
+import { getBadges, getMonthDays, getMonthlyTotals } from "@/lib/logs";
+import { getSettings } from "@/lib/settings";
+import { BadgeGrid } from "./BadgeGrid";
 import { studentRank } from "@/lib/leaderboard";
 
 export const metadata = { title: "Progress" };
@@ -14,7 +16,10 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
   const current = monthOf(todayIST());
   const month = m && isValidMonth(m) && m <= current ? m : current;
 
-  const [days, monthly] = await Promise.all([getMonthDays(student.id, month), getMonthlyTotals(student.id)]);
+  const [days, monthly, earned, settings] = await Promise.all([
+    getMonthDays(student.id, month), getMonthlyTotals(student.id), getBadges(student.id), getSettings(),
+  ]);
+  const earnedMap = Object.fromEntries(earned.map((b) => [b.badge_code, b.earned_on]));
   const values = Object.values(days);
   const max = Math.max(1, ...values);
   const thisMonth = monthly.find((x) => x.month === month);
@@ -105,6 +110,14 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
           </ul>
         </section>
         {rank && <p className="text-center text-sm text-muted">{monthLabel(month, lang)} · {t.common.rank} #{rank.rank}</p>}
+
+        {/* badges are for all time, not just the month shown above; the Rules tab links here */}
+        <section id="badges" className="card scroll-mt-[calc(var(--sat)+1rem)] p-4">
+          <h2 className="text-lg font-bold text-gold-700">{t.profile.badges}</h2>
+          <p className="hint mb-3">{t.profile.badgesHint}</p>
+          <BadgeGrid earned={earnedMap} studentName={`${student.first_name} ${student.surname}`} referralCode={student.referral_code}
+            referralsEnabled={settings.referralsEnabled} bonus={settings.referralBonus} days={settings.referralUnlockDays} />
+        </section>
       </main>
     </>
   );

@@ -79,7 +79,7 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
   The new student sees “Invited by ‹name›”. Once the new student has logged on 3 different days, **both** get 100
   bonus points (amount and days are admin settings).
 - **Gamification:** day streak 🪔 with milestone bonuses (7/21/51/108 days → 50/100/200/500 points by default),
-  9 badges (tap a badge to open it and share it on WhatsApp), and a shareable **monthly certificate** (PNG) once a month has ended.
+  9 badges on the **Progress** tab (tap a badge to open it and share it on WhatsApp), and a shareable **monthly certificate** (PNG) once a month has ended.
 - **Printable sheet:** Profile → *Printable niyam sheet*: pick a month and a period (full month, days 1–15, day 16–end) and
   download a one-page A4 landscape **PDF** or **Excel** file with the niyam list, day columns, total row and signature lines.
 

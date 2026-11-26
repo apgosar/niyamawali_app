@@ -20,8 +20,8 @@ export interface Rules {
   sections: RuleSection[];
 }
 
-/** Profile tab, scrolled to the Badges card */
-const BADGES_HREF = "/profile#badges";
+/** Progress tab, scrolled to the Badges card */
+const BADGES_HREF = "/progress#badges";
 
 const AMOUNTS = ["₹15,000", "₹12,000", "₹10,000", "₹8,000", "₹6,000", "₹4,000", "₹3,000", "₹2,000"];
 const TOTAL = "₹60,000";
