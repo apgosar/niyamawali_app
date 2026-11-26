@@ -52,15 +52,24 @@ export async function getMonthTotal(studentId: string, month: string, q?: Querya
   return r[0]?.t ?? 0;
 }
 
-/** Every day on which the student has at least one niyam logged. */
-async function loggedDates(studentId: string): Promise<string[]> {
-  const rows = await query<{ d: string }>("select distinct log_date::text as d from daily_logs where student_id = $1", [studentId]);
+/**
+ * The days that count as "logged" for streaks, badges and rewards: days the student has SUBMITTED
+ * (and that still have at least one niyam). Ticks on a day that is not submitted count for nothing here.
+ */
+async function submittedDates(studentId: string): Promise<string[]> {
+  const rows = await query<{ d: string }>(
+    `select s.log_date::text as d from daily_submissions s
+      where s.student_id = $1
+        and exists (select 1 from daily_logs l where l.student_id = s.student_id and l.log_date = s.log_date)`,
+    [studentId],
+  );
   return rows.map((r) => r.d);
 }
 
 export async function getStreak(studentId: string, today = todayIST()): Promise<{ streak: number; rescue: StreakRescue | null }> {
-  const [dates, access] = await Promise.all([loggedDates(studentId), getAccess(studentId, today)]);
-  const fillable = access.days.filter((d) => d.editable).map((d) => d.date);
+  const [dates, access] = await Promise.all([submittedDates(studentId), getAccess(studentId, today)]);
+  // days that can still be submitted, so they can still keep the streak going
+  const fillable = access.days.filter((d) => d.editable && !d.submitted).map((d) => d.date);
   return { streak: computeStreak(dates, today, fillable), rescue: streakRescue(dates, today, fillable) };
 }
 
@@ -117,8 +126,8 @@ export async function getEditState(studentId: string, date: string, today = toda
   return { submitted: !!sub, ...dayAccess(date, today, settings.editWindowDays, grant?.days_back ?? null, !!sub) };
 }
 
-/** The student finishes a day: from now on only an admin unlock can change it. */
-export async function submitDay(studentId: string, date: string): Promise<AccessInfo> {
+/** The student finishes a day: it now counts for streaks and badges, and only an admin unlock can change it. */
+export async function submitDay(studentId: string, date: string): Promise<SubmitResult> {
   if (!isValidYmd(date)) throw new LogError("bad_date");
   const today = todayIST();
   const st = await getEditState(studentId, date, today);
@@ -134,23 +143,28 @@ export async function submitDay(studentId: string, date: string): Promise<Access
       [studentId, date],
     );
   }
-  return getAccess(studentId, today);
+  const rewards = await refreshRewards(studentId, date, today);
+  const [access, totals] = await Promise.all([getAccess(studentId, today), getTotals(studentId, date, today)]);
+  return { access, ...totals, ...rewards };
 }
 
-export interface SaveResult extends Totals {
+export interface Rewards {
   newBadges: string[];
   bonuses: { kind: string; points: number }[];
 }
+export type SaveResult = Totals & Rewards;
+export type SubmitResult = SaveResult & { access: AccessInfo };
 
 /**
- * Save (or clear, when value = 0) one niyam for one day, then run the follow-up rules:
- * streak bonuses, referral unlock and badges.
+ * Save (or clear, when value = 0) one niyam for one day.
+ * Ticking does not touch streaks or badges: that happens when the day is submitted. The exception is a change
+ * to an already submitted day (possible while an admin has unlocked it), which is re-checked straight away.
  */
 export async function saveEntry(studentId: string, date: string, niyamId: number, value: number): Promise<SaveResult> {
   if (!isValidYmd(date)) throw new LogError("bad_date");
   const today = todayIST();
-  const settings = await getSettings();
-  if (!(await getEditState(studentId, date, today)).editable) throw new LogError("locked");
+  const state = await getEditState(studentId, date, today);
+  if (!state.editable) throw new LogError("locked");
 
   const { niyams, options } = await getNiyams();
   const niyam = niyams.find((n) => n.id === niyamId);
@@ -174,134 +188,125 @@ export async function saveEntry(studentId: string, date: string, niyamId: number
     );
   }
 
-  const bonuses: { kind: string; points: number }[] = [];
-  const newBadges: string[] = [];
-
-  // streak rewards follow what is really logged: the longest run of days in the student's history
-  const best = longestStreak(await loggedDates(studentId));
-  await withdrawStreakRewards(studentId, best); // e.g. a tick that completed a streak was removed again
-
-  if (value !== 0) {
-    // 1) streak milestone bonuses (each milestone is paid once)
-    for (const b of settings.streakBonuses) {
-      if (best >= b.days) {
-        const ins = await query(
-          `insert into bonus_points (student_id, awarded_on, kind, ref, points, note)
-           values ($1, $2, 'streak', $3, $4, $5)
-           on conflict (student_id, kind, ref) where ref is not null do nothing returning id`,
-          [studentId, today, `streak:${b.days}`, b.points, `${b.days}-day streak`],
-        );
-        if (ins.length) bonuses.push({ kind: "streak", points: b.points });
-      }
-    }
-
-    // 2) referral bonus – unlocks once the new student has logged on enough days
-    const ref = settings.referralsEnabled
-      ? await one<{ referrer_id: string }>("select referrer_id from referrals where referee_id = $1 and status = 'pending'", [studentId])
-      : null; // programme is off: nothing is paid (pending referrals wait until it is turned back on)
-    if (ref) {
-      const days = await one<{ n: number }>(
-        "select count(distinct log_date)::int as n from daily_logs where student_id = $1",
-        [studentId],
-      );
-      if ((days?.n ?? 0) >= settings.referralUnlockDays) {
-        const got = await tx(async (q) => {
-          const upd = await q.query(
-            `update referrals set status = 'awarded', awarded_at = now()
-              where referee_id = $1 and status = 'pending' returning referee_id`,
-            [studentId],
-          );
-          if (!upd.length) return false;
-          await q.query(
-            `insert into bonus_points (student_id, awarded_on, kind, ref, points, note) values
-               ($1, $3, 'referral', 'referred-by', $4, 'Referral bonus (joined through a friend)'),
-               ($2, $3, 'referral', $5, $4, 'Referral bonus (a friend you invited is now active)')
-             on conflict (student_id, kind, ref) where ref is not null do nothing`,
-            [studentId, ref.referrer_id, today, settings.referralBonus, `referral:${studentId}`],
-          );
-          return true;
-        });
-        if (got) bonuses.push({ kind: "referral", points: settings.referralBonus });
-      }
-    }
-
-    // 3) badges
-    newBadges.push(...(await evaluateBadges(studentId, date, best, today)));
-  }
-
-  return { ...(await getTotals(studentId, date, today)), newBadges, bonuses };
+  const rewards = state.submitted ? await refreshRewards(studentId, date, today) : { newBadges: [], bonuses: [] };
+  return { ...(await getTotals(studentId, date, today)), ...rewards };
 }
 
-const STREAK_BADGES = [{ code: "streak_7", days: 7 }, { code: "streak_21", days: 21 }, { code: "streak_108", days: 108 }];
+/** Streak bonuses, referral unlock and badges, all worked out from submitted days only. */
+async function refreshRewards(studentId: string, date: string, today: string): Promise<Rewards> {
+  const settings = await getSettings();
+  const dates = await submittedDates(studentId);
+  const best = longestStreak(dates); // the longest run of submitted days in a row
+  const bonuses: Rewards["bonuses"] = [];
 
-/** Take back streak badges and streak bonus points whose number of days in a row is no longer there. */
-async function withdrawStreakRewards(studentId: string, best: number) {
-  for (const b of STREAK_BADGES) {
-    if (best < b.days) await query("delete from student_badges where student_id = $1 and badge_code = $2", [studentId, b.code]);
-  }
+  // 1) streak milestone bonuses: take back any that are not backed by submitted days, pay new ones once
   await query(
     `delete from bonus_points where student_id = $1 and kind = 'streak' and ref like 'streak:%'
        and split_part(ref, ':', 2)::int > $2`,
     [studentId, best],
   );
+  for (const b of settings.streakBonuses) {
+    if (best >= b.days) {
+      const ins = await query(
+        `insert into bonus_points (student_id, awarded_on, kind, ref, points, note)
+         values ($1, $2, 'streak', $3, $4, $5)
+         on conflict (student_id, kind, ref) where ref is not null do nothing returning id`,
+        [studentId, today, `streak:${b.days}`, b.points, `${b.days}-day streak`],
+      );
+      if (ins.length) bonuses.push({ kind: "streak", points: b.points });
+    }
+  }
+
+  // 2) referral bonus – unlocks once the new student has submitted enough days
+  const ref = settings.referralsEnabled
+    ? await one<{ referrer_id: string }>("select referrer_id from referrals where referee_id = $1 and status = 'pending'", [studentId])
+    : null; // programme is off: nothing is paid (pending referrals wait until it is turned back on)
+  if (ref && dates.length >= settings.referralUnlockDays) {
+    const got = await tx(async (q) => {
+      const upd = await q.query(
+        `update referrals set status = 'awarded', awarded_at = now()
+          where referee_id = $1 and status = 'pending' returning referee_id`,
+        [studentId],
+      );
+      if (!upd.length) return false;
+      await q.query(
+        `insert into bonus_points (student_id, awarded_on, kind, ref, points, note) values
+           ($1, $3, 'referral', 'referred-by', $4, 'Referral bonus (joined through a friend)'),
+           ($2, $3, 'referral', $5, $4, 'Referral bonus (a friend you invited is now active)')
+         on conflict (student_id, kind, ref) where ref is not null do nothing`,
+        [studentId, ref.referrer_id, today, settings.referralBonus, `referral:${studentId}`],
+      );
+      return true;
+    });
+    if (got) bonuses.push({ kind: "referral", points: settings.referralBonus });
+  }
+
+  // 3) badges
+  const newBadges = await evaluateBadges(studentId, date, dates, best, today);
+  return { newBadges, bonuses };
 }
 
-async function evaluateBadges(studentId: string, date: string, best: number, today: string): Promise<string[]> {
+/**
+ * Badges from submitted days. The counting badges (first day, streaks, Tapasvi, Gyani) are also taken back
+ * when submitted days no longer support them. Perfect Day, Kalyan Mitra and Top 10 are only ever added.
+ */
+async function evaluateBadges(studentId: string, date: string, dates: string[], best: number, today: string): Promise<string[]> {
   const have = new Set(
     (await query<{ badge_code: string }>("select badge_code from student_badges where student_id = $1", [studentId])).map(
       (r) => r.badge_code,
     ),
   );
-  const earned: string[] = [];
-  const maybe = async (code: string, test: () => Promise<boolean> | boolean) => {
-    if (have.has(code) || !BADGES.some((b) => b.code === code)) return;
-    if (await test()) earned.push(code);
-  };
+  const submittedLogs = `daily_logs l join daily_submissions s on s.student_id = l.student_id and s.log_date = l.log_date`;
 
-  await maybe("first_step", () => true); // a log was just saved
-  for (const b of STREAK_BADGES) await maybe(b.code, () => best >= b.days);
-  await maybe("perfect_day", async () => {
+  const tapas = await one<{ n: number }>(
+    `select count(*)::int as n from ${submittedLogs}
+       join niyam_options o on o.id = l.value and o.niyam_id = l.niyam_id
+       join niyams n on n.id = l.niyam_id and n.type = 'choice'
+      where l.student_id = $1 and o.code in ('ayambil','upvas')`,
+    [studentId],
+  );
+  const gathas = await one<{ n: number }>(
+    `select coalesce(sum(l.value),0)::int as n from ${submittedLogs}
+       join niyams n on n.id = l.niyam_id and n.type = 'count' where l.student_id = $1`,
+    [studentId],
+  );
+
+  const counted: Record<string, boolean> = {
+    first_step: dates.length > 0,
+    streak_7: best >= 7,
+    streak_21: best >= 21,
+    streak_108: best >= 108,
+    tapasvi: (tapas?.n ?? 0) >= 10,
+    gyani: (gathas?.n ?? 0) >= 25,
+  };
+  const earned: string[] = [];
+  for (const [code, deserved] of Object.entries(counted)) {
+    if (!deserved && have.has(code)) await query("delete from student_badges where student_id = $1 and badge_code = $2", [studentId, code]);
+    if (deserved && !have.has(code)) earned.push(code);
+  }
+
+  if (!have.has("perfect_day") && dates.includes(date)) {
     const r = await one<{ done: number; total: number }>(
       `select (select count(*) from daily_logs l join niyams n on n.id = l.niyam_id
                 where l.student_id = $1 and l.log_date = $2 and n.type = 'boolean' and n.active)::int as done,
               (select count(*) from niyams where type = 'boolean' and active)::int as total`,
       [studentId, date],
     );
-    return !!r && r.total > 0 && r.done >= r.total;
-  });
-  await maybe("tapasvi", async () => {
-    const r = await one<{ n: number }>(
-      `select count(*)::int as n from daily_logs l
-         join niyam_options o on o.id = l.value and o.niyam_id = l.niyam_id
-         join niyams n on n.id = l.niyam_id and n.type = 'choice'
-        where l.student_id = $1 and o.code in ('ayambil','upvas')`,
-      [studentId],
-    );
-    return (r?.n ?? 0) >= 10;
-  });
-  await maybe("gyani", async () => {
-    const r = await one<{ n: number }>(
-      `select coalesce(sum(l.value),0)::int as n from daily_logs l
-         join niyams n on n.id = l.niyam_id and n.type = 'count' where l.student_id = $1`,
-      [studentId],
-    );
-    return (r?.n ?? 0) >= 25;
-  });
-  await maybe("mitra", async () => {
-    const r = await one<{ n: number }>(
-      "select count(*)::int as n from referrals where referrer_id = $1 and status = 'awarded'",
-      [studentId],
-    );
-    return (r?.n ?? 0) >= 5;
-  });
+    if (r && r.total > 0 && r.done >= r.total) earned.push("perfect_day");
+  }
+  if (!have.has("mitra")) {
+    const r = await one<{ n: number }>("select count(*)::int as n from referrals where referrer_id = $1 and status = 'awarded'", [studentId]);
+    if ((r?.n ?? 0) >= 5) earned.push("mitra");
+  }
 
-  for (const code of earned) {
+  const known = earned.filter((code) => BADGES.some((b) => b.code === code));
+  for (const code of known) {
     await query(
       "insert into student_badges (student_id, badge_code, earned_on) values ($1, $2, $3) on conflict do nothing",
       [studentId, code, today],
     );
   }
-  return earned;
+  return known;
 }
 
 export async function getBadges(studentId: string): Promise<{ badge_code: string; earned_on: string }[]> {

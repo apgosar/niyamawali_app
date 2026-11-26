@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { query } from "../db";
 import { addDays, todayIST } from "../dates";
-import { getNiyams, saveEntry } from "../logs";
+import { getNiyams, saveEntry, submitDay } from "../logs";
 import { getSettings, saveSettings } from "../settings";
 
 const today = todayIST();
@@ -33,17 +33,18 @@ describe("referrals on/off", () => {
   });
 
   it("pays nothing while off, however many days the new student logs", async () => {
-    for (const back of [0, 1, 2, 3]) await saveEntry(referee, addDays(today, -back), yesNo, 1).catch(() => {}); // the 4th is outside the edit window
+    for (const back of [0, 1, 2]) {
+      await saveEntry(referee, addDays(today, -back), yesNo, 1);
+      await submitDay(referee, addDays(today, -back));
+    }
     expect(await referralBonuses()).toBe(0);
     expect(await status()).toBe("pending");
   });
 
-  it("when turned on, the waiting referral is paid on the next saved entry (both sides, once)", async () => {
+  it("when turned on, the waiting referral is paid on the next submit (both sides, once)", async () => {
     await saveSettings({ referrals_enabled: "1" });
     expect((await getSettings()).referralsEnabled).toBe(true);
-    const r = await saveEntry(referee, today, yesNo, 0); // un-tick: no bonus on removals
-    expect(r.bonuses).toEqual([]);
-    const r2 = await saveEntry(referee, today, yesNo, 1);
+    const r2 = await submitDay(referee, today);
     expect(r2.bonuses.some((b) => b.kind === "referral")).toBe(true);
     expect(await status()).toBe("awarded");
     expect(await referralBonuses()).toBe(2);
@@ -55,7 +56,10 @@ describe("referrals on/off", () => {
     expect(await status()).toBe("awarded");
     // a brand-new referral made while off stays pending
     const newbie = await mk("Newbie", "TGL003", referrer);
-    for (const back of [0, 1, 2]) await saveEntry(newbie, addDays(today, -back), yesNo, 1);
+    for (const back of [0, 1, 2]) {
+      await saveEntry(newbie, addDays(today, -back), yesNo, 1);
+      await submitDay(newbie, addDays(today, -back));
+    }
     expect(await referralBonuses()).toBe(2);
     expect((await query<{ status: string }>("select status from referrals where referee_id = $1", [newbie]))[0].status).toBe("pending");
   });

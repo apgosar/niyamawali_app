@@ -104,12 +104,7 @@ export function TodayClient(p: Props) {
         if (res.ok) {
           const d = await res.json();
           if (!queue.current.length) setTotals({ monthTotal: d.monthTotal, streak: d.streak, rescue: d.rescue });
-          const msgs: string[] = [];
-          for (const code of d.newBadges ?? []) {
-            const b = badgeByCode(code);
-            if (b) msgs.push(`${b.icon} ${f(t.today.newBadge, { name: b.name[lang] })}`);
-          }
-          for (const b of d.bonuses ?? []) msgs.push(`🎁 ${f(t.today.bonus, { n: n(b.points) })}`);
+          const msgs = rewardMessages(d);
           if (msgs.length) showToast(msgs.join("  ·  "));
         } else {
           loadDate(op.date); // rejected (e.g. the day was locked) – show the truth
@@ -179,6 +174,17 @@ export function TodayClient(p: Props) {
     return false;
   }
 
+  /** "new badge" / "bonus points" lines for the pop-up message */
+  function rewardMessages(d: { newBadges?: string[]; bonuses?: { points: number }[] }): string[] {
+    const msgs: string[] = [];
+    for (const code of d.newBadges ?? []) {
+      const b = badgeByCode(code);
+      if (b) msgs.push(`${b.icon} ${f(t.today.newBadge, { name: b.name[lang] })}`);
+    }
+    for (const b of d.bonuses ?? []) msgs.push(`🎁 ${f(t.today.bonus, { n: n(b.points) })}`);
+    return msgs;
+  }
+
   async function submitDay() {
     setConfirming(false);
     setSubmitting(true);
@@ -187,7 +193,12 @@ export function TodayClient(p: Props) {
       const res = await fetch("/api/logs/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date }) });
       if (res.status === 401) { window.location.assign("/login"); return; }
       const data = await res.json().catch(() => ({}));
-      if (res.ok) { setAccess(data.access); showToast(t.lock.submittedToast); }
+      if (res.ok) {
+        // submitting is what moves the streak and earns badges
+        setAccess(data.access);
+        setTotals({ monthTotal: data.monthTotal, streak: data.streak, rescue: data.rescue });
+        showToast([t.lock.submittedToast, ...rewardMessages(data)].join("  ·  "));
+      }
       else if (data.error === "empty") showToast(t.lock.submitNeedOne);
       else await loadDate(date);
     } catch {
@@ -300,7 +311,7 @@ export function TodayClient(p: Props) {
           🪔 {f(t.today.streakRescue, { day: fullDay(totals.rescue.date), n: n(totals.rescue.run) })}
           {totals.rescue.date === oldestInWindow && <span className="mt-0.5 block text-xs">{t.today.streakLastChance}</span>}
         </button>
-      ) : date === p.today && dayTotal === 0 && totals.streak > 0 && editable ? (
+      ) : date === p.today && !submitted && totals.streak > 0 && editable ? (
         <p className="mx-4 mt-3 rounded-xl bg-lotus-50 p-3 text-center text-sm font-semibold text-lotus-600">{t.today.streakNudge}</p>
       ) : null}
 

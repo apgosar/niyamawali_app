@@ -9,8 +9,8 @@ export async function POST(req: Request) {
   const b = await req.json().catch(() => ({}));
   if (typeof b.date !== "string") return NextResponse.json({ error: "bad_date" }, { status: 400 });
   try {
-    const access = await submitDay(student.id, b.date);
-    return NextResponse.json({ ok: true, access });
+    const result = await submitDay(student.id, b.date);
+    return NextResponse.json({ ok: true, ...result });
   } catch (e) {
     if (e instanceof LogError) {
       return NextResponse.json({ error: e.code }, { status: e.code === "locked" ? 403 : 400 });

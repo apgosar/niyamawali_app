@@ -60,7 +60,7 @@ describe("submit + lock", () => {
 
   it("submitting locks the day: no more edits, in any direction", async () => {
     await saveEntry(s, today, yesNo, 1);
-    const access = await submitDay(s, today);
+    const { access } = await submitDay(s, today);
     expect(access.days[0]).toMatchObject({ date: today, submitted: true, editable: false });
     await expect(saveEntry(s, today, yesNo, 0)).rejects.toMatchObject({ code: "locked" }); // untick
     await expect(saveEntry(s, today, yesNo, 1)).rejects.toBeInstanceOf(LogError); // even same value

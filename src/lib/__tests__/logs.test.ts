@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { query } from "../db";
 import { addDays, todayIST } from "../dates";
-import { getBadges, getMonthTotal, getNiyams, LogError, saveEntry } from "../logs";
+import { getBadges, getMonthTotal, getNiyams, LogError, saveEntry, submitDay } from "../logs";
 import { monthlyLeaderboard } from "../leaderboard";
 import { saveSettings } from "../settings";
 
@@ -66,21 +66,25 @@ describe("saveEntry", () => {
     await expect(saveEntry(c, today, 9999, 1)).rejects.toMatchObject({ code: "bad_niyam" });
   });
 
-  it("awards the first-step badge", async () => {
+  it("awards the first-step badge when the day is submitted, not on ticking", async () => {
+    expect(await getBadges(c)).toEqual([]);
+    const r = await submitDay(c, today);
+    expect(r.newBadges).toContain("first_step");
     expect((await getBadges(c)).map((x) => x.badge_code)).toContain("first_step");
   });
 });
 
 describe("referral bonus", () => {
   beforeAll(async () => { await saveSettings({ referrals_enabled: "1" }); }); // the programme is OFF by default
-  it("stays pending until the referee has logged 3 different days", async () => {
-    await saveEntry(b, today, ids.yesno, 1);
-    await saveEntry(b, addDays(today, -1), ids.yesno, 1);
+  it("stays pending until the referee has submitted 3 different days", async () => {
+    for (const back of [0, 1, 2]) await saveEntry(b, addDays(today, -back), ids.yesno, 1); // ticks alone pay nothing
+    await submitDay(b, today);
+    await submitDay(b, addDays(today, -1));
     let ref = await query<{ status: string }>("select status from referrals where referee_id = $1", [b]);
     expect(ref[0].status).toBe("pending");
     expect(await getMonthTotal(a, today.slice(0, 7))).toBe(0);
 
-    const r = await saveEntry(b, addDays(today, -2), ids.yesno, 1);
+    const r = await submitDay(b, addDays(today, -2));
     ref = await query<{ status: string }>("select status from referrals where referee_id = $1", [b]);
     expect(ref[0].status).toBe("awarded");
     expect(r.bonuses.some((x) => x.kind === "referral" && x.points === 100)).toBe(true);
@@ -91,9 +95,8 @@ describe("referral bonus", () => {
     expect(bonuses.every((x) => x.points === 100)).toBe(true);
   });
 
-  it("is paid only once even if more days are logged or entries are toggled", async () => {
-    await saveEntry(b, today, ids.yesno, 0);
-    await saveEntry(b, today, ids.yesno, 1);
+  it("is paid only once even if a day is submitted again", async () => {
+    await submitDay(b, today);
     const n = await query<{ n: number }>("select count(*)::int as n from bonus_points where kind = 'referral'");
     expect(n[0].n).toBe(2);
   });
@@ -105,25 +108,21 @@ describe("referral bonus", () => {
 });
 
 describe("streak milestone", () => {
-  it("pays the 7-day bonus exactly once", async () => {
+  it("pays the 7-day bonus exactly once, when the seventh day in a row is submitted", async () => {
     const d = await mkStudent("Streaker", "DDDDDD");
-    // six earlier days already logged (older than the edit window, as if logged in the past)
+    // six earlier days already submitted (older than the edit window)
     for (let i = 3; i <= 8; i++) {
-      await query(
-        "insert into daily_logs (student_id, log_date, niyam_id, value, points) values ($1,$2,$3,1,10)",
-        [d, addDays(today, -i), ids.yesno],
-      );
+      await query("insert into daily_logs (student_id, log_date, niyam_id, value, points) values ($1,$2,$3,1,10)", [d, addDays(today, -i), ids.yesno]);
+      await query("insert into daily_submissions (student_id, log_date) values ($1,$2)", [d, addDays(today, -i)]);
     }
-    // the seventh day in a row crosses the milestone, even though yesterday is still to be filled in
-    const crossing = await saveEntry(d, addDays(today, -2), ids.yesno, 1);
+    const tick = await saveEntry(d, addDays(today, -2), ids.yesno, 1);
+    expect(tick.streak).toBe(6); // ticked but not submitted
+    expect(tick.bonuses).toEqual([]);
+    const crossing = await submitDay(d, addDays(today, -2));
     expect(crossing.streak).toBe(7);
     expect(crossing.bonuses).toContainEqual({ kind: "streak", points: 50 });
-    await saveEntry(d, addDays(today, -1), ids.yesno, 1);
-    const r = await saveEntry(d, today, ids.yesno, 1); // 9 consecutive days now
-    expect(r.streak).toBe(9);
-    expect(r.bonuses.some((x) => x.kind === "streak")).toBe(false); // already paid
-    await saveEntry(d, today, ids.yesno, 0);
-    await saveEntry(d, today, ids.yesno, 1);
+    const again = await submitDay(d, addDays(today, -2));
+    expect(again.bonuses).toEqual([]); // already paid
     const paid = await query<{ n: number }>("select count(*)::int as n from bonus_points where student_id = $1 and kind = 'streak'", [d]);
     expect(paid[0].n).toBe(1);
     expect((await getBadges(d)).map((x) => x.badge_code)).toContain("streak_7");

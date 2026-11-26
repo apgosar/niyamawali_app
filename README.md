@@ -168,7 +168,7 @@ unlock-days fields are greyed out (their saved values are kept).
 - **Off:** students do not see the *Invite friends* card or the “Kalyan Mitra” badge, badge share messages carry no bonus promise or invite code,
   old `?ref=` links just open the normal registration form (nobody is linked as a referrer), and no referral bonus is paid.
 - Referrals already made are kept and bonuses already paid stay. Referrals still waiting for their logged days are **paused** and are paid
-  on the student’s next saved entry once you turn it back **on**.
+  when the student next submits a day after you turn it back **on**.
 
 ## 9. Village list
 
@@ -189,11 +189,13 @@ their Progress page whenever the month has bonus points.
 Students have a **Rules** tab (📜) in the bottom bar with the Divine Sanskar Shibir Niyamawali rules and guidelines in English and Gujarati. The text lives in
 `src/i18n/rules.ts` – change a rule there in both languages.
 
-## 12. Streaks
+## 12. Streaks and badges
 
-- A streak counts days in a row with at least one niyam logged. It **stays alive while the missing days can still be logged** (the edit window,
-  or days an admin has unlocked). The Today screen then shows *“Log Tue 24 Nov to continue your 5-day streak”*; tapping it opens that day.
-  Once a missing day can no longer be logged, the streak is 0.
-- The 7 / 21 / 108-day badges and streak bonus points are given when that many days in a row are really logged. If a tick that completed the
-  run is removed again, the badge and bonus are taken back (checked whenever the student saves).
+- **A day counts only once it is submitted.** Ticking or unticking niyams changes points, but not the streak or badges.
+- A streak counts submitted days in a row. It **stays alive while the missing days can still be submitted** (the edit window, or days an
+  admin has unlocked). The Today screen then shows *“Submit Tue 24 Nov to continue your 5-day streak”*; tapping it opens that day.
+  Once a missing day can no longer be submitted, the streak is 0.
+- Badges and streak bonus points are worked out when a day is submitted (and again if an admin-unlocked submitted day is changed). Streak,
+  first-day, Tapasvi and Gyani badges, and streak bonuses, are taken back if submitted days do not support them.
+- Older days that were never submitted do not count. An admin can unlock them so the student can submit them.
 - Every “day” is a day in **India (IST)**, whatever timezone the server uses. An app left open overnight reloads itself on the new day.

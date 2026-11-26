@@ -55,11 +55,11 @@ export const en = {
     errFix: "Please fix the highlighted fields.",
   },
   today: {
-    dayTotal: "Today's points", monthTotal: "This month", streak: "Day streak", streakNudge: "Log a niyam today to keep your streak alive 🪔",
+    dayTotal: "Today's points", monthTotal: "This month", streak: "Day streak", streakNudge: "Submit today to keep your streak alive 🪔",
     saved: "Saved ✓", saving: "Saving…", queued: "Will sync when online", locked: "This day is locked",
     editHint: "You can edit today and the last {n} days until you submit a day. A submitted day is locked.", todayLabel: "Today", yesterday: "Yesterday",
     gathas: "gathas", perGatha: "× {n} each", hello: "Jai Jinendra", newBadge: "New badge: {name}", bonus: "Bonus +{n} points!",
-    streakRescue: "Log {day} to continue your {n}-day streak", streakLastChance: "Last chance: add it before midnight tonight",
+    streakRescue: "Submit {day} to continue your {n}-day streak", streakLastChance: "Last chance: submit it before midnight tonight",
     sponsored: "Sponsored by", top: "Back to top", total: "Today", editing: "Editing", noNiyams: "No niyams are set up yet.",
     dayPoints: "{n} points today",
   },
@@ -75,7 +75,7 @@ export const en = {
     niyamPoints: "Niyam points", bonusPoints: "Bonus points",
   },
   profile: {
-    title: "My profile", badges: "Badges", badgesHint: "Earn badges as you keep going", locked: "Locked",
+    title: "My profile", badges: "Badges", badgesHint: "Earn badges as you keep going. Only submitted days count.", locked: "Locked",
     referral: "Invite friends", referralHelp: "You and your friend each get {bonus} bonus points once they log {days} days.",
     yourCode: "Your invite code", shareWhatsApp: "Share on WhatsApp", shareOther: "Share…", copyLink: "Copy link",
     shareText: "Jai Jinendra 🙏 Join me on Niyamawali – the Divine Sanskar Shibir niyam tracker. Sign up using my link and record your niyams for {days} days, and we will both get {bonus} bonus points! 🎁\nMy invite code: {code}\n{link}",
@@ -88,7 +88,7 @@ export const en = {
   stats: { streak: "Streak", points: "Points" },
   lock: {
     submitDay: "Submit day",
-    submitHelp: "When you have ticked everything for this day, submit it. After that the day is locked.",
+    submitHelp: "When you have ticked everything for this day, submit it. Only submitted days count for your streak and badges. After that the day is locked.",
     submitNeedOne: "Tick at least one niyam to submit this day.",
     confirmTitle: "Submit this day?",
     confirmBody: "{date} · {pts} points. After you submit, you cannot change it without the admin.",

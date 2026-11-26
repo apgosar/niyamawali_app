@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { query } from "../db";
 import { addDays, todayIST } from "../dates";
 import { getNiyams, getTotals, saveEntry, submitDay } from "../logs";
+import { grantEdit } from "../grants";
 import { computeStreak, streakRescue } from "../streaks";
 import { getDashboard, getStudentDetail, parseFilters, queryStudents } from "../admin-data";
 
@@ -37,10 +38,11 @@ describe("a streak stays alive while the missing days can still be logged", () =
   });
 });
 
-describe("streak badge and bonus follow the logged days", () => {
+describe("only submitted days count for the streak and badges", () => {
   let sid = "";
   let niyam = 0;
-  const has7 = async () => (await query("select 1 from student_badges where student_id = $1 and badge_code = 'streak_7'", [sid])).length === 1;
+  let adminId = 0;
+  const badges = async () => (await query<{ badge_code: string }>("select badge_code from student_badges where student_id = $1", [sid])).map((b) => b.badge_code);
   const bonus7 = async () => (await query("select 1 from bonus_points where student_id = $1 and ref = 'streak:7'", [sid])).length;
 
   beforeAll(async () => {
@@ -50,50 +52,70 @@ describe("streak badge and bonus follow the logged days", () => {
        values ('Streak','Test','students/x.jpg','2012-01-01','V','M','9820000088','R','S','A',false,'x','STK001') returning id`,
     );
     sid = r.id;
+    adminId = (await query<{ id: number }>("insert into admins (username, password_hash, name) values ('streakadmin','x','A') returning id"))[0].id;
     niyam = (await getNiyams()).niyams.find((n) => n.type === "boolean")!.id;
-    for (const back of [7, 6, 5, 4, 3]) // five days, the last one three days ago
+    for (const back of [7, 6, 5, 4, 3]) { // five submitted days, the last one three days ago
       await query("insert into daily_logs (student_id, log_date, niyam_id, value, points) values ($1,$2,$3,1,10)", [sid, ago(back), niyam]);
+      await query("insert into daily_submissions (student_id, log_date) values ($1,$2)", [sid, ago(back)]);
+    }
   });
 
-  it("shows the streak and the day to log", async () => {
+  it("shows the streak and the day to submit", async () => {
     const t = await getTotals(sid, today, today);
     expect(t.streak).toBe(5);
     expect(t.rescue).toEqual({ date: ago(2), run: 5 });
   });
 
-  it("six days is not seven", async () => {
-    const r = await saveEntry(sid, ago(2), niyam, 1);
-    expect(r.streak).toBe(6);
-    expect(r.rescue).toEqual({ date: ago(1), run: 6 });
-    expect(r.newBadges).not.toContain("streak_7");
-    expect(await has7()).toBe(false);
-  });
-
-  it("a tick that is removed again takes the badge and the bonus back", async () => {
-    const on = await saveEntry(sid, ago(1), niyam, 1);
-    expect(on.newBadges).toContain("streak_7");
-    expect(await bonus7()).toBe(1);
-    const off = await saveEntry(sid, ago(1), niyam, 0);
-    expect(off.streak).toBe(6);
-    expect(await has7()).toBe(false);
+  it("ticking and unticking change nothing but points", async () => {
+    for (const back of [2, 1, 0]) {
+      const r = await saveEntry(sid, ago(back), niyam, 1);
+      expect(r.streak).toBe(5);
+      expect(r.rescue).toEqual({ date: ago(2), run: 5 }); // ticked, but still to be submitted
+      expect(r.newBadges).toEqual([]);
+      expect(r.bonuses).toEqual([]);
+    }
+    expect((await saveEntry(sid, today, niyam, 0)).streak).toBe(5);
+    expect(await badges()).toEqual([]);
     expect(await bonus7()).toBe(0);
-    expect(off.monthTotal).toBeLessThan(on.monthTotal);
   });
 
-  it("a really completed seventh day earns it once and it stays", async () => {
-    await saveEntry(sid, ago(1), niyam, 1);
-    await submitDay(sid, ago(1));
-    const r = await saveEntry(sid, today, niyam, 1);
-    expect(r.streak).toBe(8);
-    await saveEntry(sid, today, niyam, 0);
-    expect(await has7()).toBe(true);
+  it("each submitted day moves the streak on", async () => {
+    const six = await submitDay(sid, ago(2));
+    expect(six.streak).toBe(6);
+    expect(six.rescue).toEqual({ date: ago(1), run: 6 });
+    expect(six.newBadges).toContain("first_step");
+    expect(six.newBadges).not.toContain("streak_7");
+  });
+
+  it("the seventh submitted day earns the badge and bonus", async () => {
+    const seven = await submitDay(sid, ago(1));
+    expect(seven.streak).toBe(7);
+    expect(seven.rescue).toBeNull();
+    expect(seven.newBadges).toContain("streak_7");
+    expect(seven.bonuses).toContainEqual({ kind: "streak", points: 50 });
     expect(await bonus7()).toBe(1);
   });
 
-  it("a wrongly granted badge is cleared on the next save", async () => {
-    await query("insert into student_badges (student_id, badge_code, earned_on) values ($1,'streak_21',$2)", [sid, today]);
+  it("badges granted without submitted days are cleared at the next submit, not by ticking", async () => {
+    await query("insert into student_badges (student_id, badge_code, earned_on) values ($1,'streak_21',$2), ($1,'gyani',$2)", [sid, today]);
     await saveEntry(sid, today, niyam, 1);
-    expect((await query("select 1 from student_badges where student_id = $1 and badge_code = 'streak_21'", [sid])).length).toBe(0);
+    expect(await badges()).toContain("streak_21");
+    await submitDay(sid, today);
+    expect(await badges()).not.toContain("streak_21");
+    expect(await badges()).not.toContain("gyani");
+    expect(await badges()).toContain("streak_7");
+  });
+
+  it("emptying a submitted day during an admin unlock takes the day back out", async () => {
+    await grantEdit({ studentId: sid, daysBack: 10, hours: 1, adminId });
+    const r = await saveEntry(sid, ago(5), niyam, 0); // leaves 3 + (ago 4..today = 5) days
+    expect(r.streak).toBe(5);
+    expect(await badges()).not.toContain("streak_7");
+    expect(await bonus7()).toBe(0);
+    const back = await saveEntry(sid, ago(5), niyam, 1); // already submitted, so it counts again at once
+    expect(back.streak).toBe(8);
+    expect(await badges()).toContain("streak_7");
+    expect(await bonus7()).toBe(1);
   });
 });
 
