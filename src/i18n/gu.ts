@@ -4,7 +4,7 @@ export const gu: Dict = {
   appName: "નિયમાવલી",
   orgName: "Divine Sanskar Shibir",
   tagline: "સંસ્કાર · સાધના · સિદ્ધિ",
-  nav: { today: "આજે", leaderboard: "લીડરબોર્ડ", progress: "પ્રગતિ", profile: "પ્રોફાઇલ" },
+  nav: { today: "આજે", leaderboard: "લીડરબોર્ડ", progress: "પ્રગતિ", rules: "સૂચનાઓ", profile: "પ્રોફાઇલ" },
   common: {
     next: "આગળ", back: "પાછળ", save: "સાચવો", cancel: "રદ કરો", loading: "લોડ થઈ રહ્યું છે…", points: "પોઇન્ટ", pts: "પોઇન્ટ",
     yes: "હા", no: "ના", required: "જરૂરી", optional: "વૈકલ્પિક", retry: "ફરી પ્રયત્ન કરો", close: "બંધ કરો",

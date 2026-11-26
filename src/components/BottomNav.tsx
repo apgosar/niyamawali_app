@@ -7,6 +7,7 @@ import { useI18n } from "./I18nProvider";
 const items = [
   { href: "/", key: "today", icon: "🪷" },
   { href: "/progress", key: "progress", icon: "📈" },
+  { href: "/rules", key: "rules", icon: "📜" },
   { href: "/profile", key: "profile", icon: "👤" },
 ] as const;
 
@@ -34,7 +35,7 @@ export function BottomNav() {
 
   return (
     <nav aria-label="Main" className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-gold-100 bg-ivory shadow-[0_-4px_14px_-8px_rgba(120,80,20,0.25)]">
-      <ul className="mx-auto grid h-[var(--nav-body)] max-w-md grid-cols-3">
+      <ul className="mx-auto grid h-[var(--nav-body)] max-w-md grid-cols-4">
         {items.map((it) => (
           <li key={it.href} className="h-full">
             <Link href={it.href} aria-current={current === it.href ? "page" : undefined} className="flex h-full items-center justify-center transition-transform active:scale-95"

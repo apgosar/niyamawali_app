@@ -183,3 +183,8 @@ students have already entered. Run `npm run db:migrate` before deploying (safe t
 
 Admin → a student → **Month by month** shows Days, **Niyam** points, **Bonus** points and Total for each month (with an all-time row). Students see the same split on
 their Progress page whenever the month has bonus points.
+
+## 11. Rules tab
+
+Students have a **Rules** tab (📜) in the bottom bar with the DSS Niyamawali rules and guidelines in English and Gujarati. The text lives in
+`src/i18n/rules.ts` – change a rule there in both languages.

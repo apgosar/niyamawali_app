@@ -2,7 +2,7 @@ export const en = {
   appName: "Niyamawali",
   orgName: "Divine Sanskar Shibir",
   tagline: "Sanskar · Sadhana · Siddhi",
-  nav: { today: "Today", leaderboard: "Leaderboard", progress: "Progress", profile: "Profile" },
+  nav: { today: "Today", leaderboard: "Leaderboard", progress: "Progress", rules: "Rules", profile: "Profile" },
   common: {
     next: "Next", back: "Back", save: "Save", cancel: "Cancel", loading: "Loading…", points: "points", pts: "pts",
     yes: "Yes", no: "No", required: "Required", optional: "Optional", retry: "Try again", close: "Close",
