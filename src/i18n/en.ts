@@ -59,6 +59,7 @@ export const en = {
     saved: "Saved ✓", saving: "Saving…", queued: "Will sync when online", locked: "This day is locked",
     editHint: "You can edit today and the last {n} days until you submit a day. A submitted day is locked.", todayLabel: "Today", yesterday: "Yesterday",
     gathas: "gathas", perGatha: "× {n} each", hello: "Jai Jinendra", newBadge: "New badge: {name}", bonus: "Bonus +{n} points!",
+    streakRescue: "Log {day} to continue your {n}-day streak", streakLastChance: "Last chance: add it before midnight tonight",
     sponsored: "Sponsored by", top: "Back to top", total: "Today", editing: "Editing", noNiyams: "No niyams are set up yet.",
     dayPoints: "{n} points today",
   },

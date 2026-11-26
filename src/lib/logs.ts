@@ -2,7 +2,7 @@ import "server-only";
 import { one, query, tx, type Queryable } from "./db";
 import { addDays, isValidYmd, monthOf, monthRange, todayIST } from "./dates";
 import { scoreEntry, type NiyamDef, type OptionDef } from "./points";
-import { computeStreak } from "./streaks";
+import { computeStreak, longestStreak, streakRescue, type StreakRescue } from "./streaks";
 import { getSettings } from "./settings";
 import { BADGES } from "./badges";
 import { buildAccess, dayAccess, type AccessInfo, type GrantInfo } from "./access";
@@ -36,6 +36,7 @@ export interface Totals {
   dayTotal: number;
   monthTotal: number;
   streak: number;
+  rescue: StreakRescue | null; // an older empty day that can still be logged to continue the streak
 }
 
 export async function getMonthTotal(studentId: string, month: string, q?: Queryable): Promise<number> {
@@ -51,12 +52,16 @@ export async function getMonthTotal(studentId: string, month: string, q?: Querya
   return r[0]?.t ?? 0;
 }
 
-export async function getStreak(studentId: string, today = todayIST()): Promise<number> {
-  const rows = await query<{ d: string }>(
-    "select distinct log_date::text as d from daily_logs where student_id = $1 and log_date > $2",
-    [studentId, addDays(today, -400)],
-  );
-  return computeStreak(rows.map((r) => r.d), today);
+/** Every day on which the student has at least one niyam logged. */
+async function loggedDates(studentId: string): Promise<string[]> {
+  const rows = await query<{ d: string }>("select distinct log_date::text as d from daily_logs where student_id = $1", [studentId]);
+  return rows.map((r) => r.d);
+}
+
+export async function getStreak(studentId: string, today = todayIST()): Promise<{ streak: number; rescue: StreakRescue | null }> {
+  const [dates, access] = await Promise.all([loggedDates(studentId), getAccess(studentId, today)]);
+  const fillable = access.days.filter((d) => d.editable).map((d) => d.date);
+  return { streak: computeStreak(dates, today, fillable), rescue: streakRescue(dates, today, fillable) };
 }
 
 export async function getTotals(studentId: string, date: string, today = todayIST()): Promise<Totals> {
@@ -68,7 +73,7 @@ export async function getTotals(studentId: string, date: string, today = todayIS
     getMonthTotal(studentId, monthOf(today)),
     getStreak(studentId, today),
   ]);
-  return { dayTotal: dayRow?.t ?? 0, monthTotal, streak };
+  return { dayTotal: dayRow?.t ?? 0, monthTotal, ...streak };
 }
 
 export class LogError extends Error {
@@ -172,12 +177,14 @@ export async function saveEntry(studentId: string, date: string, niyamId: number
   const bonuses: { kind: string; points: number }[] = [];
   const newBadges: string[] = [];
 
-  if (value !== 0) {
-    const streak = await getStreak(studentId, today);
+  // streak rewards follow what is really logged: the longest run of days in the student's history
+  const best = longestStreak(await loggedDates(studentId));
+  await withdrawStreakRewards(studentId, best); // e.g. a tick that completed a streak was removed again
 
+  if (value !== 0) {
     // 1) streak milestone bonuses (each milestone is paid once)
     for (const b of settings.streakBonuses) {
-      if (streak >= b.days) {
+      if (best >= b.days) {
         const ins = await query(
           `insert into bonus_points (student_id, awarded_on, kind, ref, points, note)
            values ($1, $2, 'streak', $3, $4, $5)
@@ -219,13 +226,27 @@ export async function saveEntry(studentId: string, date: string, niyamId: number
     }
 
     // 3) badges
-    newBadges.push(...(await evaluateBadges(studentId, date, streak, today)));
+    newBadges.push(...(await evaluateBadges(studentId, date, best, today)));
   }
 
   return { ...(await getTotals(studentId, date, today)), newBadges, bonuses };
 }
 
-async function evaluateBadges(studentId: string, date: string, streak: number, today: string): Promise<string[]> {
+const STREAK_BADGES = [{ code: "streak_7", days: 7 }, { code: "streak_21", days: 21 }, { code: "streak_108", days: 108 }];
+
+/** Take back streak badges and streak bonus points whose number of days in a row is no longer there. */
+async function withdrawStreakRewards(studentId: string, best: number) {
+  for (const b of STREAK_BADGES) {
+    if (best < b.days) await query("delete from student_badges where student_id = $1 and badge_code = $2", [studentId, b.code]);
+  }
+  await query(
+    `delete from bonus_points where student_id = $1 and kind = 'streak' and ref like 'streak:%'
+       and split_part(ref, ':', 2)::int > $2`,
+    [studentId, best],
+  );
+}
+
+async function evaluateBadges(studentId: string, date: string, best: number, today: string): Promise<string[]> {
   const have = new Set(
     (await query<{ badge_code: string }>("select badge_code from student_badges where student_id = $1", [studentId])).map(
       (r) => r.badge_code,
@@ -238,9 +259,7 @@ async function evaluateBadges(studentId: string, date: string, streak: number, t
   };
 
   await maybe("first_step", () => true); // a log was just saved
-  await maybe("streak_7", () => streak >= 7);
-  await maybe("streak_21", () => streak >= 21);
-  await maybe("streak_108", () => streak >= 108);
+  for (const b of STREAK_BADGES) await maybe(b.code, () => best >= b.days);
   await maybe("perfect_day", async () => {
     const r = await one<{ done: number; total: number }>(
       `select (select count(*) from daily_logs l join niyams n on n.id = l.niyam_id

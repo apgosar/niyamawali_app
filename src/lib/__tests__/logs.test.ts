@@ -114,11 +114,11 @@ describe("streak milestone", () => {
         [d, addDays(today, -i), ids.yesno],
       );
     }
-    await saveEntry(d, addDays(today, -2), ids.yesno, 1);
-    // streak is 8 (alive through yesterday) once yesterday is logged -> crosses the 7-day milestone here
-    const crossing = await saveEntry(d, addDays(today, -1), ids.yesno, 1);
-    expect(crossing.streak).toBe(8);
+    // the seventh day in a row crosses the milestone, even though yesterday is still to be filled in
+    const crossing = await saveEntry(d, addDays(today, -2), ids.yesno, 1);
+    expect(crossing.streak).toBe(7);
     expect(crossing.bonuses).toContainEqual({ kind: "streak", points: 50 });
+    await saveEntry(d, addDays(today, -1), ids.yesno, 1);
     const r = await saveEntry(d, today, ids.yesno, 1); // 9 consecutive days now
     expect(r.streak).toBe(9);
     expect(r.bonuses.some((x) => x.kind === "streak")).toBe(false); // already paid

@@ -32,7 +32,7 @@ export async function getDashboard(): Promise<DashboardStats> {
        (select count(*) from students where active)::int as total,
        (select count(distinct student_id) from daily_logs where log_date = $1)::int as active_today,
        (select count(distinct student_id) from daily_logs where log_date >= $2 and log_date < $3)::int as active_month,
-       (select count(*) from students where created_at >= $2::date and created_at < $3::date)::int as new_month,
+       (select count(*) from students where (created_at at time zone 'Asia/Kolkata') >= $2::date and (created_at at time zone 'Asia/Kolkata') < $3::date)::int as new_month,
        (coalesce((select sum(points) from daily_logs where log_date >= $2 and log_date < $3),0) +
         coalesce((select sum(points) from bonus_points where awarded_on >= $2 and awarded_on < $3),0))::int as points_month,
        (select count(*) from referrals where status = 'awarded')::int as ref_awarded,
@@ -50,8 +50,8 @@ export async function getDashboard(): Promise<DashboardStats> {
   );
 
   const registrations = await query<{ month: string; n: number }>(
-    `select to_char(created_at, 'YYYY-MM') as month, count(*)::int as n from students
-      where created_at >= $1::date group by 1 order by 1`,
+    `select to_char(created_at at time zone 'Asia/Kolkata', 'YYYY-MM') as month, count(*)::int as n from students
+      where (created_at at time zone 'Asia/Kolkata') >= $1::date group by 1 order by 1`,
     [`${addMonths(month, -11)}-01`],
   );
 
@@ -197,7 +197,7 @@ export async function queryStudents(f: StudentFilters, opts: { limit?: number; o
      )
      select s.id, s.student_code, s.first_name, s.surname, s.photo_key, s.dob::text as dob, s.village, s.residence, s.sangh,
             s.father_name, s.father_phone, s.mother_name, s.mother_phone, s.own_phone, s.dharmik_abhyas,
-            s.pathshala, s.pathshala_name, s.gender, s.standard, s.previous_shibirs, s.active, s.created_at::text as created_at,
+            s.pathshala, s.pathshala_name, s.gender, s.standard, s.previous_shibirs, s.active, (s.created_at at time zone 'Asia/Kolkata')::text as created_at,
             coalesce(pts.points, 0)::int as points, coalesce(days.n, 0)::int as active_days,
             count(*) over ()::int as total
        from students s
@@ -270,7 +270,7 @@ export function toCsv(rows: (string | number | null | undefined)[][]): string {
 export async function getStudentDetail(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const s = await one<Record<string, string | number | boolean | null>>(
-    `select s.*, s.dob::text as dob, s.created_at::text as created_at,
+    `select s.*, s.dob::text as dob, (s.created_at at time zone 'Asia/Kolkata')::text as created_at,
             (select first_name || ' ' || surname from students r where r.id = s.referred_by) as referred_by_name
        from students s where s.id = $1`,
     [id],

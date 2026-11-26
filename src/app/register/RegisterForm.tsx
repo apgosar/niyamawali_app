@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/I18nProvider";
+import { todayIST } from "@/lib/dates";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { PinPad } from "@/components/PinPad";
 import { MultiSelect } from "@/components/MultiSelect";
@@ -49,7 +50,7 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => todayIST(), []);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setV((s) => ({ ...s, [k]: e.target.value }));

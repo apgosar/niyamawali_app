@@ -1,18 +1,44 @@
 import { addDays } from "./dates";
 
-/**
- * Current streak = consecutive days with at least one niyam logged.
- * A streak is still "alive" if today is empty but yesterday was logged.
- */
-export function computeStreak(loggedDates: string[], today: string): number {
-  const set = new Set(loggedDates);
-  let cursor = set.has(today) ? today : addDays(today, -1);
+/** Number of consecutive logged days ending on `end` (0 if `end` itself is not logged). */
+function runEndingAt(logged: Set<string>, end: string): number {
   let n = 0;
-  while (set.has(cursor)) {
-    n++;
-    cursor = addDays(cursor, -1);
-  }
+  for (let d = end; logged.has(d); d = addDays(d, -1)) n++;
   return n;
+}
+
+/**
+ * Current streak = consecutive days with at least one niyam logged, ending at the latest logged day.
+ * It stays "alive" while every empty day after that one can still be filled in: today always can,
+ * and so can the days in `fillable` (the edit window, or days an admin has unlocked).
+ * Once an empty day can no longer be logged, the streak is broken (0).
+ */
+export function computeStreak(loggedDates: string[], today: string, fillable: string[] = []): number {
+  const logged = new Set(loggedDates.filter((d) => d <= today));
+  const last = [...logged].sort().pop();
+  if (!last) return 0;
+  const open = new Set(fillable);
+  for (let d = addDays(last, 1); d < today; d = addDays(d, 1)) if (!open.has(d)) return 0;
+  return runEndingAt(logged, last);
+}
+
+export interface StreakRescue {
+  date: string; // the empty past day to log
+  run: number; // length of the streak that day would continue
+}
+
+/**
+ * The oldest empty past day that can still be logged and would continue a streak
+ * (the day before it is logged). null when there is nothing to rescue.
+ */
+export function streakRescue(loggedDates: string[], today: string, fillable: string[]): StreakRescue | null {
+  const logged = new Set(loggedDates);
+  for (const date of [...fillable].sort()) {
+    if (date >= today || logged.has(date)) continue;
+    const run = runEndingAt(logged, addDays(date, -1));
+    if (run > 0) return { date, run };
+  }
+  return null;
 }
 
 /** Longest run of consecutive days anywhere in the history. */

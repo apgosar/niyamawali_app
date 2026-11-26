@@ -1,6 +1,6 @@
 import "server-only";
 import { query } from "./db";
-import { monthRange } from "./dates";
+import { monthRange, todayIST } from "./dates";
 
 export interface LeaderRow {
   id: string;
@@ -45,8 +45,8 @@ export async function awardTop10(month: string) {
   const top = rows.filter((r) => r.rank <= 10);
   for (const r of top) {
     await query(
-      "insert into student_badges (student_id, badge_code, earned_on) values ($1, 'top10', current_date) on conflict do nothing",
-      [r.id],
+      "insert into student_badges (student_id, badge_code, earned_on) values ($1, 'top10', $2) on conflict do nothing",
+      [r.id, todayIST()],
     );
   }
 }

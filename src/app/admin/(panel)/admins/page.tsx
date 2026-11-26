@@ -9,7 +9,7 @@ export const metadata = { title: "Admins" };
 export default async function AdminsPage() {
   const me = await requireAdmin();
   const admins = await query<{ id: number; username: string; name: string; created_at: string }>(
-    "select id, username, name, created_at::text as created_at from admins order by id",
+    "select id, username, name, (created_at at time zone 'Asia/Kolkata')::text as created_at from admins order by id",
   );
   return (
     <div className="mx-auto max-w-3xl space-y-5">

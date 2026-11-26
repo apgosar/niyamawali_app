@@ -28,7 +28,7 @@ export default async function TodayPage() {
       yesterday={addDays(today, -1)}
       initialAccess={access}
       initialEntries={entries}
-      initialTotals={{ monthTotal: totals.monthTotal, streak: totals.streak }}
+      initialTotals={{ monthTotal: totals.monthTotal, streak: totals.streak, rescue: totals.rescue }}
       donor={donor ? { name: donor.name, photo_key: donor.photo_key, message: (lang === "gu" ? donor.message_gu : donor.message_en) || donor.message_gu || donor.message_en } : null}
     />
   );

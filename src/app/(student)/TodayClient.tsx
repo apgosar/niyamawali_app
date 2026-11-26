@@ -9,9 +9,10 @@ import { ConfirmSheet } from "@/components/ConfirmSheet";
 import { DonorBanner, type DonorData } from "@/components/DonorBanner";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { scoreEntry, type NiyamDef, type OptionDef } from "@/lib/points";
-import { dayLabel, monthOf } from "@/lib/dates";
+import { addDays, dayLabel, monthLabel, monthOf, todayIST } from "@/lib/dates";
 import { badgeByCode } from "@/lib/badges";
 import type { AccessInfo } from "@/lib/access";
+import type { StreakRescue } from "@/lib/streaks";
 
 type Entries = Record<number, { value: number; points: number }>;
 interface Op { date: string; niyamId: number; value: number }
@@ -25,7 +26,7 @@ interface Props {
   yesterday: string;
   initialAccess: AccessInfo;
   initialEntries: Entries;
-  initialTotals: { monthTotal: number; streak: number };
+  initialTotals: { monthTotal: number; streak: number; rescue: StreakRescue | null };
   donor: DonorData | null;
 }
 
@@ -77,7 +78,7 @@ export function TodayClient(p: Props) {
       setAccess(data.access);
       if (queue.current.some((o) => o.date === d)) return; // unsent local changes win
       setCache((c) => ({ ...c, [d]: data.entries }));
-      if (!queue.current.length) setTotals({ monthTotal: data.totals.monthTotal, streak: data.totals.streak });
+      if (!queue.current.length) setTotals({ monthTotal: data.totals.monthTotal, streak: data.totals.streak, rescue: data.totals.rescue });
     } catch { /* offline: keep what we have */ }
   }, []);
 
@@ -102,7 +103,7 @@ export function TodayClient(p: Props) {
         if (res.status === 401) { window.location.assign("/login"); return; }
         if (res.ok) {
           const d = await res.json();
-          if (!queue.current.length) setTotals({ monthTotal: d.monthTotal, streak: d.streak });
+          if (!queue.current.length) setTotals({ monthTotal: d.monthTotal, streak: d.streak, rescue: d.rescue });
           const msgs: string[] = [];
           for (const code of d.newBadges ?? []) {
             const b = badgeByCode(code);
@@ -128,6 +129,14 @@ export function TodayClient(p: Props) {
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  // The app is often left open overnight: when a new day has started in India, reload so "Today" is really today.
+  useEffect(() => {
+    const check = () => { if (document.visibilityState === "visible" && todayIST() !== p.today) window.location.reload(); };
+    document.addEventListener("visibilitychange", check);
+    const timer = setInterval(check, 60_000);
+    return () => { document.removeEventListener("visibilitychange", check); clearInterval(timer); };
+  }, [p.today]);
 
   // Restore changes that could not be sent last time, then sync.
   useEffect(() => {
@@ -200,6 +209,14 @@ export function TodayClient(p: Props) {
     const l = dayLabel(d, lang);
     return `${l.dow} ${n(l.day)}`;
   };
+
+  /** "Tue 24 Nov" – used where the exact day matters */
+  const fullDay = (d: string) => {
+    const l = dayLabel(d, lang);
+    return `${l.dow} ${n(l.day)} ${monthLabel(monthOf(d), lang).split(" ")[0].slice(0, lang === "en" ? 3 : undefined)}`;
+  };
+  // after midnight (IST) this day drops out of the normal edit window
+  const oldestInWindow = addDays(p.today, 1 - access.windowDays);
 
   const statusText = status === "saving" ? t.today.saving : status === "saved" ? t.today.saved : t.today.queued;
 
@@ -276,9 +293,16 @@ export function TodayClient(p: Props) {
         </p>
       )}
 
-      {date === p.today && dayTotal === 0 && totals.streak > 0 && editable && (
+      {/* an older empty day can still continue the streak; otherwise remind about today */}
+      {totals.rescue ? (
+        <button type="button" onClick={() => pickDate(totals.rescue!.date)}
+          className="mx-4 mt-3 block w-[calc(100%-2rem)] rounded-xl border border-lotus-600/30 bg-lotus-50 p-3 text-center text-sm font-semibold text-lotus-600 active:scale-[0.98]">
+          🪔 {f(t.today.streakRescue, { day: fullDay(totals.rescue.date), n: n(totals.rescue.run) })}
+          {totals.rescue.date === oldestInWindow && <span className="mt-0.5 block text-xs">{t.today.streakLastChance}</span>}
+        </button>
+      ) : date === p.today && dayTotal === 0 && totals.streak > 0 && editable ? (
         <p className="mx-4 mt-3 rounded-xl bg-lotus-50 p-3 text-center text-sm font-semibold text-lotus-600">{t.today.streakNudge}</p>
-      )}
+      ) : null}
 
       {/* ---- niyams ---- */}
       <main className="mt-4 space-y-2.5 px-4 pb-20">

@@ -188,3 +188,12 @@ their Progress page whenever the month has bonus points.
 
 Students have a **Rules** tab (📜) in the bottom bar with the Divine Sanskar Shibir Niyamawali rules and guidelines in English and Gujarati. The text lives in
 `src/i18n/rules.ts` – change a rule there in both languages.
+
+## 12. Streaks
+
+- A streak counts days in a row with at least one niyam logged. It **stays alive while the missing days can still be logged** (the edit window,
+  or days an admin has unlocked). The Today screen then shows *“Log Tue 24 Nov to continue your 5-day streak”*; tapping it opens that day.
+  Once a missing day can no longer be logged, the streak is 0.
+- The 7 / 21 / 108-day badges and streak bonus points are given when that many days in a row are really logged. If a tick that completed the
+  run is removed again, the badge and bonus are taken back (checked whenever the student saves).
+- Every “day” is a day in **India (IST)**, whatever timezone the server uses. An app left open overnight reloads itself on the new day.

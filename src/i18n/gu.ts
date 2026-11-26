@@ -61,6 +61,7 @@ export const gu: Dict = {
     saved: "સેવ થયું ✓", saving: "સેવ થઈ રહ્યું છે…", queued: "ઑનલાઇન થતાં સેવ થશે", locked: "આ દિવસ બંધ છે",
     editHint: "દિવસ સબમિટ ન કરો ત્યાં સુધી તમે આજે અને છેલ્લા {n} દિવસ સુધી ફેરફાર કરી શકો છો. સબમિટ કરેલો દિવસ બંધ થઈ જાય છે.", todayLabel: "આજે", yesterday: "ગઈકાલે",
     gathas: "ગાથા", perGatha: "દરેકના {n}", hello: "જય જિનેન્દ્ર", newBadge: "નવો બૅજ: {name}", bonus: "બોનસ +{n} પોઇન્ટ!",
+    streakRescue: "તમારો {n} દિવસનો સળંગ ક્રમ ચાલુ રાખવા {day} ની નોંધ કરો", streakLastChance: "છેલ્લી તક: આજે મધરાત પહેલાં નોંધ કરો",
     sponsored: "દાતા", top: "ઉપર જાઓ", total: "આજે", editing: "ફેરફાર", noNiyams: "હજી કોઈ નિયમ ઉમેર્યા નથી.",
     dayPoints: "આજે {n} પોઇન્ટ",
   },
