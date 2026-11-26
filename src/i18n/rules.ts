@@ -6,8 +6,8 @@ import type { Lang } from "./index";
  */
 export interface RuleSection {
   title: string;
-  /** bullet points; `lead` is shown in bold before the text */
-  bullets?: { lead?: string; text: string }[];
+  /** bullet points; `lead` is shown in bold before the text, `link` as a button to another screen of the app */
+  bullets?: { lead?: string; text: string; link?: { href: string; label: string } }[];
   /** plain paragraphs */
   paragraphs?: string[];
   /** prize table, with its total */
@@ -19,6 +19,9 @@ export interface Rules {
   subtitle: string;
   sections: RuleSection[];
 }
+
+/** Profile tab, scrolled to the Badges card */
+const BADGES_HREF = "/profile#badges";
 
 const AMOUNTS = ["₹15,000", "₹12,000", "₹10,000", "₹8,000", "₹6,000", "₹4,000", "₹3,000", "₹2,000"];
 const TOTAL = "₹60,000";
@@ -55,7 +58,7 @@ export const rules: Record<Lang, Rules> = {
         title: "Additional Recognition",
         bullets: [
           { lead: "Monthly Toppers:", text: "Three students will be rewarded every month, without repetition." },
-          { lead: "All Badges:", text: "Special gifts for students who earn all prescribed badges." },
+          { lead: "All Badges:", text: "Special gifts for students who earn all prescribed badges.", link: { href: BADGES_HREF, label: "View my badges" } },
           { lead: "Consolation Gifts:", text: "Every participating student attending the upcoming Shibir will receive a gift worth a minimum of ₹500." },
         ],
       },
@@ -105,7 +108,7 @@ export const rules: Record<Lang, Rules> = {
         title: "વધારાનું સન્માન",
         bullets: [
           { lead: "માસિક ટોપર્સ:", text: "દર મહિને ત્રણ વિદ્યાર્થીઓને ઇનામ આપવામાં આવશે, પુનરાવર્તન વિના." },
-          { lead: "બધા બૅજ:", text: "નિર્ધારિત તમામ બૅજ મેળવનાર વિદ્યાર્થીઓને વિશેષ ભેટ." },
+          { lead: "બધા બૅજ:", text: "નિર્ધારિત તમામ બૅજ મેળવનાર વિદ્યાર્થીઓને વિશેષ ભેટ.", link: { href: BADGES_HREF, label: "મારા બૅજ જુઓ" } },
           { lead: "આશ્વાસન ભેટ:", text: "આગામી શિબિરમાં હાજર રહેનાર દરેક સહભાગી વિદ્યાર્થીને ઓછામાં ઓછા ₹500 ની ભેટ મળશે." },
         ],
       },

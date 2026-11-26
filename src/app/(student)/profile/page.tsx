@@ -36,7 +36,7 @@ export default async function ProfilePage() {
       </header>
 
       <main className="space-y-5 px-4 pt-5">
-        <section className="card p-4">
+        <section id="badges" className="card scroll-mt-[calc(var(--sat)+1rem)] p-4">
           <h2 className="text-lg font-bold text-gold-700">{t.profile.badges}</h2>
           <p className="hint mb-3">{t.profile.badgesHint}</p>
           <BadgeGrid earned={earnedMap} studentName={name} referralCode={student.referral_code} referralsEnabled={settings.referralsEnabled} bonus={settings.referralBonus} days={settings.referralUnlockDays} />

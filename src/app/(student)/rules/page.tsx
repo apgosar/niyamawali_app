@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
 import { getT } from "@/lib/lang";
 import { rules } from "@/i18n/rules";
 import { LangToggle } from "@/components/LangToggle";
+import { LinkSpinner } from "@/components/LinkSpinner";
 
 export const metadata = { title: "Rules" };
 
@@ -31,7 +33,14 @@ export default async function RulesPage() {
                 {s.bullets.map((b) => (
                   <li key={b.text} className="flex gap-2.5 text-[15px] leading-relaxed">
                     <span aria-hidden className="text-gold-500">◆</span>
-                    <span>{b.lead && <b className="text-gold-900">{b.lead} </b>}{b.text}</span>
+                    <span>
+                      {b.lead && <b className="text-gold-900">{b.lead} </b>}{b.text}
+                      {b.link && (
+                        <Link href={b.link.href} className="mt-2 flex w-fit min-h-10 items-center gap-2 rounded-full border border-gold-300 bg-gold-50 px-4 text-sm font-semibold text-gold-700 active:scale-95">
+                          🏅 {b.link.label} <LinkSpinner /><span aria-hidden>›</span>
+                        </Link>
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>
