@@ -186,5 +186,5 @@ their Progress page whenever the month has bonus points.
 
 ## 11. Rules tab
 
-Students have a **Rules** tab (📜) in the bottom bar with the DSS Niyamawali rules and guidelines in English and Gujarati. The text lives in
+Students have a **Rules** tab (📜) in the bottom bar with the Divine Sanskar Shibir Niyamawali rules and guidelines in English and Gujarati. The text lives in
 `src/i18n/rules.ts` – change a rule there in both languages.

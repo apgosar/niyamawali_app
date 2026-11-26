@@ -1,7 +1,7 @@
 import type { Lang } from "./index";
 
 /**
- * Text of the Rules tab (DSS Niyamawali – Rules & Guidelines), in both languages.
+ * Text of the Rules tab (Divine Sanskar Shibir Niyamawali – Rules & Guidelines), in both languages.
  * To change a rule, edit it here in BOTH languages.
  */
 export interface RuleSection {
@@ -26,7 +26,7 @@ const prizeRows = (places: string[]) => places.map((place, i) => ({ place, amoun
 
 export const rules: Record<Lang, Rules> = {
   en: {
-    title: "DSS Niyamawali",
+    title: "Divine Sanskar Shibir Niyamawali",
     subtitle: "Rules & Guidelines",
     sections: [
       {
@@ -39,7 +39,7 @@ export const rules: Record<Lang, Rules> = {
       {
         title: "Gift & Felicitation",
         bullets: [
-          { text: "All prizes and gifts will be distributed during the upcoming DSS Shibir." },
+          { text: "All prizes and gifts will be distributed during the upcoming Divine Sanskar Shibir." },
           { text: "Students must attend the upcoming Shibir to be eligible for prizes, gifts and felicitation." },
         ],
       },
@@ -70,26 +70,26 @@ export const rules: Record<Lang, Rules> = {
       {
         title: "Final Authority",
         paragraphs: [
-          "All decisions regarding eligibility, verification, evaluation and prize distribution shall be taken by the DSS Management Committee under the guidance of Pujya Guru Bhagwant. The committee’s decision shall be final.",
+          "All decisions regarding eligibility, verification, evaluation and prize distribution shall be taken by the Divine Sanskar Shibir Management Committee under the guidance of Pujya Guru Bhagwant. The committee’s decision shall be final.",
         ],
       },
     ],
   },
   gu: {
-    title: "DSS નિયમાવલી",
+    title: "ડિવાઇન સંસ્કાર શિબિર નિયમાવલી",
     subtitle: "નિયમો અને માર્ગદર્શિકા",
     sections: [
       {
         title: "પાત્રતા",
         bullets: [
-          { text: "છેલ્લી ચાર દિવ્ય સંસ્કાર શિબિરમાંથી કોઈપણ શિબિરમાં ભાગ લીધેલા વિદ્યાર્થીઓને આ નિયમાવલી લાગુ પડે છે." },
+          { text: "છેલ્લી ચાર ડિવાઇન સંસ્કાર શિબિરમાંથી કોઈપણ શિબિરમાં ભાગ લીધેલા વિદ્યાર્થીઓને આ નિયમાવલી લાગુ પડે છે." },
           { text: "પાત્રતાની ખાતરી માટે બધી એન્ટ્રીઓની જાતે (મેન્યુઅલી) ચકાસણી કરવામાં આવશે." },
         ],
       },
       {
         title: "ભેટ અને બહુમાન",
         bullets: [
-          { text: "તમામ ઇનામો અને ભેટો આગામી DSS શિબિર દરમિયાન આપવામાં આવશે." },
+          { text: "તમામ ઇનામો અને ભેટો આગામી ડિવાઇન સંસ્કાર શિબિર દરમિયાન આપવામાં આવશે." },
           { text: "ઇનામ, ભેટ અને બહુમાન માટે પાત્ર થવા વિદ્યાર્થીઓએ આગામી શિબિરમાં હાજર રહેવું ફરજિયાત છે." },
         ],
       },
@@ -120,7 +120,7 @@ export const rules: Record<Lang, Rules> = {
       {
         title: "અંતિમ સત્તા",
         paragraphs: [
-          "પાત્રતા, ચકાસણી, મૂલ્યાંકન અને ઇનામ વિતરણ અંગેના તમામ નિર્ણયો પૂજ્ય ગુરુ ભગવંતના માર્ગદર્શન હેઠળ DSS મેનેજમેન્ટ કમિટી લેશે. કમિટીનો નિર્ણય અંતિમ રહેશે.",
+          "પાત્રતા, ચકાસણી, મૂલ્યાંકન અને ઇનામ વિતરણ અંગેના તમામ નિર્ણયો પૂજ્ય ગુરુ ભગવંતના માર્ગદર્શન હેઠળ ડિવાઇન સંસ્કાર શિબિર મેનેજમેન્ટ કમિટી લેશે. કમિટીનો નિર્ણય અંતિમ રહેશે.",
         ],
       },
     ],
