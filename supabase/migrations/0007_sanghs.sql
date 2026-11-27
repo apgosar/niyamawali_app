@@ -1,5 +1,6 @@
 -- Sangh names for the searchable Sangh field. The list starts with the "Consolidated Directory of Jain Sanghs"
--- (104 entries); a Sangh a student types that is not on it is added for everyone. Safe to run more than once.
+-- (104 rows: its two Dombivali duplicates are one entry here, and its two Gujarati names are written in English).
+-- A Sangh a student types that is not on the list is added for everyone. Safe to run more than once.
 create table if not exists sanghs (
   id         serial primary key,
   name       text not null check (length(btrim(name)) >= 2),
@@ -43,7 +44,6 @@ insert into sanghs (name, source) values
   ('Shree Shakti Nagar Achalgachha Jain Sangh', 'list'),
   ('Shree Achalgachha Sangh Dombivali', 'list'),
   ('Kutchi Jain Sangh (Punya Prabhavak Trust)', 'list'),
-  ('Shree Achhalgach Jain Sangh Dombivali', 'list'),
   ('Shree Achalgachha Jain Sangh Dombivali', 'list'),
   ('KDO GVC Jain Sangh', 'list'),
   ('Shree Ghatkopar Kutchi Jain Shwetamber Murtipujak Sangh', 'list'),
@@ -89,7 +89,7 @@ insert into sanghs (name, source) values
   ('Shree Parel Vikas Shwetambar Murtipujak Jain Sangh', 'list'),
   ('Shree Shantinath Shwetambar Murtipujak Jain Charitable Trust Powai', 'list'),
   ('Shree Salasnagar Jain Sangh Kalyan', 'list'),
-  ('શ્રી આદિનાથ જિનાલય, સાનપાડા, નવી મુંબઈ', 'list'),
+  ('Shree Adinath Jinalay, Sanpada, Navi Mumbai', 'list'),
   ('Kalikund Parshwanath Jain Mandir Santacruz', 'list'),
   ('Shree Santacruz Achalgachh Jain Sangh', 'list'),
   ('Shri Sewri Jain Sangh', 'list'),
@@ -98,7 +98,7 @@ insert into sanghs (name, source) values
   ('Shree Thane KVO Jain Sangh Thane', 'list'),
   ('Shree Thane Achalgachh Jain Sangh', 'list'),
   ('Shree Kishan Nagar No 2/3 Achalgachha Jain Sangh', 'list'),
-  ('થાણા (વાગલે એસ્ટેટ) મંડણ અચલગચ્છ સંઘ', 'list'),
+  ('Thane (Wagle Estate) Mandan Achalgachha Sangh', 'list'),
   ('Shree Tembinaka Achalgachha Jain Sangh Thane (West)', 'list'),
   ('Shree Achhalgach Jain Trust Vasai', 'list'),
   ('Shree Achhalgachha Jain Derasar Trust Vasai', 'list'),

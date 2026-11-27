@@ -211,7 +211,7 @@ Admin → **Donors**: type the name on up to **three lines** in English and in G
 
 ## 14. Sangh list
 
-The **Sangh** field on registration and *Edit profile* is a search box like the Village field. It starts with the 104 entries of the
+The **Sangh** field on registration and *Edit profile* is a search box like the Village field. It starts with the 103 Sanghs of the
 *Consolidated Directory of Jain Sanghs* (`supabase/migrations/0007_sanghs.sql`). Search ignores capitals, copes with spellings such as
 “achalgach” / “Achhalgachha”, and finds words in any order (“dahisar sangh”). A Sangh that is not listed is accepted and **added to the list**.
 Run `npm run db:migrate` before deploying (safe to repeat).

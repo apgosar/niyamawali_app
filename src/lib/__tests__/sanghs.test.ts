@@ -9,25 +9,28 @@ import { listSanghs, resolveSangh, resolveSanghNow } from "../sanghs";
 const sql = fs.readFileSync(path.join(process.cwd(), "supabase", "migrations", "0007_sanghs.sql"), "utf8");
 
 describe("the Sangh list", () => {
-  it("has the 104 directory entries, including wrapped and Gujarati names", async () => {
+  it("has the 103 entries (one duplicate merged), including wrapped names and the two translated ones", async () => {
     const listed = await query<{ n: number }>("select count(*)::int as n from sanghs where source = 'list'");
-    expect(listed[0].n).toBe(104);
+    expect(listed[0].n).toBe(103);
     const all = await listSanghs();
     for (const s of [
       "Shree Kutchhi Visa Oswal Jain Sangh Ambernath",
       "Shree Bandongari Achalgachha Jain Sangh (Shree Kurar Village Achalgachha Sangh Sanchalit)",
       "Shree Nalasopara Station Achalgachha Jain Sangh, Sanghmata Jayaben Vishanji Palan Maru Charitable Trust",
-      "શ્રી આદિનાથ જિનાલય, સાનપાડા, નવી મુંબઈ",
-      "થાણા (વાગલે એસ્ટેટ) મંડણ અચલગચ્છ સંઘ",
+      "Shree Adinath Jinalay, Sanpada, Navi Mumbai",
+      "Thane (Wagle Estate) Mandan Achalgachha Sangh",
       "Shree Achalgachha Jain Sangh Worli",
+      "Shree Achalgachha Jain Sangh Dombivali",
     ]) expect(all, s).toContain(s);
+    expect(all).not.toContain("Shree Achhalgach Jain Sangh Dombivali");
+    expect(all.join(" ")).not.toMatch(/[઀-૿]/); // no Gujarati-only names left
   });
 
   it("can be loaded twice without duplicates", async () => {
     const pg = new PGlite("memory://");
     await pg.exec(sql);
     await pg.exec(sql);
-    expect((await pg.query("select 1 from sanghs")).rows).toHaveLength(104);
+    expect((await pg.query("select 1 from sanghs")).rows).toHaveLength(103);
   });
 });
 
@@ -35,10 +38,10 @@ describe("searching long Sangh names", () => {
   const find = async (typed: string) => rankMatches(await listSanghs(), typed);
 
   it("finds a word anywhere, and words in any order", async () => {
-    expect(await find("dombivali")).toHaveLength(3);
+    expect(await find("dombivali")).toHaveLength(2);
     expect(await find("dahisar sangh")).toEqual(["Shree Dahisar Achalgachha Jain Sangh"]);
     expect(await find("worli achalgach")).toContain("Shree Achalgachha Jain Sangh Worli");
-    expect(await find("સાનપાડા")).toEqual(["શ્રી આદિનાથ જિનાલય, સાનપાડા, નવી મુંબઈ"]);
+    expect(await find("sanpada")).toEqual(["Shree Adinath Jinalay, Sanpada, Navi Mumbai"]);
   });
   it("copes with the different spellings", async () => {
     for (const typed of ["Dahisar Achalgach", "dahisar achhalgachh", "DAHISAR ACHALGACHCH"])
