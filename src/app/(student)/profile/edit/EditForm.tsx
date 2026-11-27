@@ -5,6 +5,7 @@ import { useI18n } from "@/components/I18nProvider";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { MultiSelect } from "@/components/MultiSelect";
 import { Combobox } from "@/components/Combobox";
+import { normalizeSangh } from "@/lib/village-text";
 import { PREVIOUS_SHIBIRS, STANDARDS, parseShibirs, standardLabel } from "@/lib/profile-options";
 
 function Field({ k, label, error, children }: { k: string; label: string; error?: string | null; children: React.ReactNode }) {
@@ -17,7 +18,7 @@ function Field({ k, label, error, children }: { k: string; label: string; error?
   );
 }
 
-export function EditForm({ initial, photoKey, villages }: { initial: Record<string, string>; photoKey: string; villages: string[] }) {
+export function EditForm({ initial, photoKey, villages, sanghs }: { initial: Record<string, string>; photoKey: string; villages: string[]; sanghs: string[] }) {
   const { t, lang } = useI18n();
   const r = t.register;
   const router = useRouter();
@@ -62,7 +63,10 @@ export function EditForm({ initial, photoKey, villages }: { initial: Record<stri
           addLabel={r.villageAdd} newHint={r.villageNew} onChange={(val) => { setV((s) => ({ ...s, village: val })); setDone(false); }} />
       </Field>
       <Field k="residence" label={r.residence} error={msg(errors.residence)}>{input("residence")}</Field>
-      <Field k="sangh" label={r.sangh} error={msg(errors.sangh)}>{input("sangh")}</Field>
+      <Field k="sangh" label={r.sangh} error={msg(errors.sangh)}>
+        <Combobox id="sangh" value={v.sangh ?? ""} options={sanghs} placeholder={r.sanghSearch} invalid={!!errors.sangh}
+          addLabel={r.sanghAdd} newHint={r.sanghNew} normalize={normalizeSangh} onChange={(val) => { setV((s) => ({ ...s, sangh: val })); setDone(false); }} />
+      </Field>
       <div>
         <p className="label">{r.gender}</p>
         <div className="grid grid-cols-2 gap-3">

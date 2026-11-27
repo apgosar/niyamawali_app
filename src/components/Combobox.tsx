@@ -6,7 +6,7 @@ import { findExact, normalizeVillage, rankMatches } from "@/lib/village-text";
  * A text box with a live-filtered list under it. Pick a suggestion, or just keep what you typed:
  * anything is accepted, and a value that is not on the list is marked as new.
  */
-export function Combobox({ id, value, onChange, options, placeholder, invalid, addLabel, newHint, autoComplete = "off" }: {
+export function Combobox({ id, value, onChange, options, placeholder, invalid, addLabel, newHint, normalize = normalizeVillage, autoComplete = "off" }: {
   id: string;
   value: string;
   onChange: (v: string) => void;
@@ -17,6 +17,8 @@ export function Combobox({ id, value, onChange, options, placeholder, invalid, a
   addLabel: string;
   /** hint shown when the typed value is not on the list, with {name} */
   newHint: string;
+  /** how a new value is tidied before it is added */
+  normalize?: (typed: string) => string;
   autoComplete?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -25,7 +27,7 @@ export function Combobox({ id, value, onChange, options, placeholder, invalid, a
   const listId = useId();
 
   const matches = useMemo(() => rankMatches(options, value), [options, value]);
-  const typed = normalizeVillage(value);
+  const typed = normalize(value);
   const exact = findExact(options, value);
   const canAdd = typed.length >= 2 && !exact;
   const rows = canAdd ? [...matches, null] : matches; // null = the "use what I typed" row
@@ -69,7 +71,7 @@ export function Combobox({ id, value, onChange, options, placeholder, invalid, a
               // mouse/touch down (not click) so the input keeps focus and the list does not close before we pick
               onPointerDown={(e) => { e.preventDefault(); choose(row); }}
               onPointerEnter={() => setActive(i)}
-              className={`flex min-h-11 cursor-pointer items-center rounded-lg px-3 text-[15px] ${i === active ? "bg-gold-50" : ""} ${row === null ? "border-t border-gold-100 font-semibold text-gold-700" : ""} ${row !== null && row === exact ? "font-semibold text-sage-700" : ""}`}>
+              className={`flex min-h-11 cursor-pointer items-center rounded-lg px-3 py-2 text-[15px] leading-snug ${i === active ? "bg-gold-50" : ""} ${row === null ? "border-t border-gold-100 font-semibold text-gold-700" : ""} ${row !== null && row === exact ? "font-semibold text-sage-700" : ""}`}>
               {row ?? `➕ ${addLabel.replace("{name}", typed)}`}
             </li>
           ))}
@@ -77,6 +79,8 @@ export function Combobox({ id, value, onChange, options, placeholder, invalid, a
       )}
 
       {!open && canAdd && <p className="hint">{newHint.replace("{name}", typed)}</p>}
+      {/* a long name does not fit in the box: show all of it underneath */}
+      {!open && exact && exact.length > 32 && <p className="hint">✓ {exact}</p>}
     </div>
   );
 }

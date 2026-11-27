@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/I18nProvider";
 import { todayIST } from "@/lib/dates";
+import { normalizeSangh } from "@/lib/village-text";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { PinPad } from "@/components/PinPad";
 import { MultiSelect } from "@/components/MultiSelect";
@@ -215,7 +216,11 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
         {step === 2 && (
           <>
             <Field k="residence" error={msg(errors.residence)} label={`${r.residence} *`} hint={r.residenceHint}>{text("residence", { list: "dl-residence" })}</Field>
-            <Field k="sangh" error={msg(errors.sangh)} label={`${r.sangh} *`} hint={r.sanghHint}>{text("sangh", { list: "dl-sangh" })}</Field>
+            <Field k="sangh" error={msg(errors.sangh)} label={`${r.sangh} *`}>
+              <Combobox id="sangh" value={v.sangh ?? ""} options={suggestions.sangh} placeholder={r.sanghSearch} invalid={!!errors.sangh}
+                addLabel={r.sanghAdd} newHint={r.sanghNew} normalize={normalizeSangh}
+                onChange={(val) => { setV((s) => ({ ...s, sangh: val })); if (errors.sangh) setErrors((s) => ({ ...s, sangh: "" })); }} />
+            </Field>
             <Field k="standard" error={msg(errors.standard)} label={`${r.standard} *`}>
               <select id="standard" name="standard" className="field" value={v.standard ?? ""} aria-invalid={!!errors.standard}
                 onChange={(e) => { setV((s) => ({ ...s, standard: e.target.value })); setErrors((s) => ({ ...s, standard: "" })); }}>
@@ -279,7 +284,6 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
       </p>
 
       <datalist id="dl-residence">{suggestions.residence.map((s) => <option key={s} value={s} />)}</datalist>
-      <datalist id="dl-sangh">{suggestions.sangh.map((s) => <option key={s} value={s} />)}</datalist>
     </section>
   );
 }

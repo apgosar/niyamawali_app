@@ -51,4 +51,5 @@ next-env.d.ts
 # personal files that get saved into the project folder (photos, spreadsheets, Office lock files)
 /WhatsApp Image*
 /*.xlsx
+/*.pdf
 ~$*

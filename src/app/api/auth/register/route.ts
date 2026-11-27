@@ -7,6 +7,7 @@ import { deletePhoto, savePhoto } from "@/lib/storage";
 import { MAX_PHOTO_BYTES, parseDetails, parseIdentity, type FieldErrors } from "@/lib/validation";
 import { studentCodeSql } from "@/lib/student-code";
 import { resolveVillage } from "@/lib/villages";
+import { resolveSangh } from "@/lib/sanghs";
 
 export async function POST(req: Request) {
   const fd = await req.formData().catch(() => null);
@@ -47,8 +48,9 @@ export async function POST(req: Request) {
 
   try {
     const created = await tx(async (q) => {
-      // a village that is not on the list yet is accepted and added to it (same transaction as the sign-up)
+      // a village or Sangh that is not on its list yet is accepted and added to it (same transaction as the sign-up)
       const village = await resolveVillage(q, details.village);
+      const sangh = await resolveSangh(q, details.sangh);
       const rows = await q.query<{ id: string; session_version: number }>(
         `insert into students
            (first_name, surname, photo_key, dob, village, father_name, father_phone, mother_name, mother_phone,
@@ -58,7 +60,7 @@ export async function POST(req: Request) {
          returning id, session_version`,
         [
           id.first_name, id.surname, photoKey, id.dob, village, details.father_name, details.father_phone,
-          details.mother_name, details.mother_phone, details.own_phone, details.residence, details.sangh,
+          details.mother_name, details.mother_phone, details.own_phone, details.residence, sangh,
           details.dharmik_abhyas, details.pathshala, details.pathshala_name, pinHash, code, referrer?.id ?? null,
           id.gender, details.standard, details.previous_shibirs,
         ],

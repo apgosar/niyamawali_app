@@ -208,3 +208,11 @@ Admin → **Donors**: type the name on up to **three lines** in English and in G
 - **Opening screen:** the photo is shown large (if it is taller than the space, the **top** is cut off), with *Labharthi Parivaar:* and the lines.
 - **Niyam screen:** a small round picture and the lines; tapping it opens the whole photo with the full name.
 - The newest donor is the one shown; remove it to stop showing it. Run `npm run db:migrate` before deploying (safe to repeat).
+
+## 14. Sangh list
+
+The **Sangh** field on registration and *Edit profile* is a search box like the Village field. It starts with the 104 entries of the
+*Consolidated Directory of Jain Sanghs* (`supabase/migrations/0007_sanghs.sql`). Search ignores capitals, copes with spellings such as
+“achalgach” / “Achhalgachha”, and finds words in any order (“dahisar sangh”). A Sangh that is not listed is accepted and **added to the list**.
+Run `npm run db:migrate` before deploying (safe to repeat).
+
