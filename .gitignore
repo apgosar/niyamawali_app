@@ -47,3 +47,8 @@ next-env.d.ts
 # local tooling and reference photo (not needed to run the app)
 /.claude/
 /niyam_list.jpeg
+
+# personal files that get saved into the project folder (photos, spreadsheets, Office lock files)
+/WhatsApp Image*
+/*.xlsx
+~$*

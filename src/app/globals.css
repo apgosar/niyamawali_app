@@ -104,6 +104,10 @@ h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: 0.
 
 /* Opening screen */
 html[data-splash="skip"] #splash { display: none !important; }
+/* with a large family photo on the opening screen, the logo and spacing make room for it */
+#splash:has([data-donor-photo]) .splash-logo img { height: 6rem; width: 6rem; }
+#splash:has([data-donor-photo]) .splash-body { gap: 0.75rem; }
+#splash:has([data-donor-photo]) h1 { font-size: 1.5rem; }
 @keyframes splashIn { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: scale(1); } }
 .splash-logo { animation: splashIn .9s cubic-bezier(.2,.8,.2,1) both; }
 

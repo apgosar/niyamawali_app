@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { monthOf, monthLabel, todayIST, isValidMonth, addMonths } from "@/lib/dates";
 import { awardTop10, currentDonor, monthlyLeaderboard } from "@/lib/leaderboard";
+import { donorLines } from "@/lib/donor";
 import { Avatar } from "@/components/Avatar";
 import { ShareResults } from "./ShareResults";
 
@@ -29,7 +30,7 @@ export default async function AdminLeaderboard({ searchParams }: { searchParams:
       <p className="text-sm text-muted">Rankings are visible to admins only. Students see just their own points.</p>
 
       {closed && top.length > 0 && (
-        <ShareResults month={month} monthEn={monthLabel(month, "en")} monthGu={monthLabel(month, "gu")} rows={top} donor={donor?.name ?? null} />
+        <ShareResults month={month} monthEn={monthLabel(month, "en")} monthGu={monthLabel(month, "gu")} rows={top} donor={donor ? ["Labharthi Parivaar:", ...donorLines(donor, "en")].join("\n") : null} />
       )}
       {!closed && <p className="rounded-xl bg-gold-50 p-3 text-sm text-gold-700">Sharing opens once the month has ended.</p>}
 

@@ -71,8 +71,9 @@ for (let i = 0; i < 40; i++) {
 }
 
 await query(
-  `insert into donors (name, message_gu, message_en)
-   select 'Shri Mahendrabhai Gala Parivar', 'નિયમ દાતા તરફથી', 'Sponsored with devotion'
+  `insert into donors (name, name_gu)
+   select E'Matushri Maniben Kunvarji Ghela Bhai Nandu Parivar\\nHaste- Shrimati Sarojben Kishor Nandu\\nGaam- Pundi',
+          E'માતુશ્રી મણીબેન કુંવર્જી ઘેલાભાઈ નંદુ પરિવાર\\nહ. શ્રીમતી સરોજબેન કિશોર નંદુ\\nગામ : પુનડી'
    where not exists (select 1 from donors)`,
   [],
 );

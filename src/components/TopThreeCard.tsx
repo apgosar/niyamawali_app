@@ -36,7 +36,7 @@ export function TopThreeCard({ monthEn, monthGu, rows, donor }: { monthEn: strin
         ))}
       </ol>
 
-      <p className="mt-auto pt-4 text-[11px] text-gold-700">{donor ? `🪔 ${donor}` : "🪷"}</p>
+      <p className="mt-auto whitespace-pre-line pt-4 text-center text-[11px] leading-snug text-gold-700">{donor ? `🪔 ${donor}` : "🪷"}</p>
     </div>
   );
 }

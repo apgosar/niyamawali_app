@@ -5,6 +5,7 @@ import { getT } from "@/lib/lang";
 import { fmt } from "@/i18n";
 import { isValidMonth, monthLabel, monthOf, todayIST } from "@/lib/dates";
 import { awardTop10, currentDonor, monthlyLeaderboard } from "@/lib/leaderboard";
+import { donorLines } from "@/lib/donor";
 import { FitToWidth } from "@/components/FitToWidth";
 import { TopThreeCard } from "@/components/TopThreeCard";
 import { LangToggle } from "@/components/LangToggle";
@@ -35,7 +36,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ month:
     top = rows.filter((r) => r.rank <= 3).slice(0, 5).map((r) => ({ rank: r.rank, name: `${r.first_name} ${r.surname}`, photoKey: r.photo_key }));
     const me = rows.find((r) => r.id === student.id);
     mine = me ? { rank: me.rank, points: me.points } : null;
-    donorName = donor?.name ?? null;
+    donorName = donor ? [`${t.today.sponsored}:`, ...donorLines(donor, lang)].join("\n") : null;
   }
 
   return (

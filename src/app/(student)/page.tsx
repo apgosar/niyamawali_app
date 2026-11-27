@@ -3,6 +3,7 @@ import { getT } from "@/lib/lang";
 import { addDays, todayIST } from "@/lib/dates";
 import { getAccess, getDayEntries, getNiyams, getTotals } from "@/lib/logs";
 import { currentDonor } from "@/lib/leaderboard";
+import { donorLines } from "@/lib/donor";
 import { TodayClient } from "./TodayClient";
 
 export const metadata = { title: "Today" };
@@ -29,7 +30,7 @@ export default async function TodayPage() {
       initialAccess={access}
       initialEntries={entries}
       initialTotals={{ monthTotal: totals.monthTotal, streak: totals.streak, rescue: totals.rescue }}
-      donor={donor ? { name: donor.name, photo_key: donor.photo_key, message: (lang === "gu" ? donor.message_gu : donor.message_en) || donor.message_gu || donor.message_en } : null}
+      donor={donor ? { lines: donorLines(donor, lang), photo_key: donor.photo_key, message: (lang === "gu" ? donor.message_gu : donor.message_en) || donor.message_gu || donor.message_en } : null}
     />
   );
 }

@@ -60,12 +60,12 @@ export const en = {
     editHint: "You can edit today and the last {n} days until you submit a day. A submitted day is locked.", todayLabel: "Today", yesterday: "Yesterday",
     gathas: "gathas", perGatha: "× {n} each", hello: "Jai Jinendra", newBadge: "New badge: {name}", bonus: "Bonus +{n} points!",
     streakRescue: "Submit {day} to continue your {n}-day streak", streakLastChance: "Last chance: submit it before midnight tonight",
-    sponsored: "Sponsored by", top: "Back to top", total: "Today", editing: "Editing", noNiyams: "No niyams are set up yet.",
+    sponsored: "Labharthi Parivaar", top: "Back to top", total: "Today", editing: "Editing", noNiyams: "No niyams are set up yet.",
     dayPoints: "{n} points today",
   },
   board: {
     title: "Leaderboard", thisMonth: "This month", lastMonth: "Last month", yourRank: "Your rank",
-    empty: "No points yet this month. Be the first!", pointsSuffix: "pts", sponsorTitle: "Donor",
+    empty: "No points yet this month. Be the first!", pointsSuffix: "pts", sponsorTitle: "Labharthi Parivaar",
     notRanked: "Log a niyam to enter the leaderboard",
   },
   progress: {

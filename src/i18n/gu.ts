@@ -62,12 +62,12 @@ export const gu: Dict = {
     editHint: "દિવસ સબમિટ ન કરો ત્યાં સુધી તમે આજે અને છેલ્લા {n} દિવસ સુધી ફેરફાર કરી શકો છો. સબમિટ કરેલો દિવસ બંધ થઈ જાય છે.", todayLabel: "આજે", yesterday: "ગઈકાલે",
     gathas: "ગાથા", perGatha: "દરેકના {n}", hello: "જય જિનેન્દ્ર", newBadge: "નવો બૅજ: {name}", bonus: "બોનસ +{n} પોઇન્ટ!",
     streakRescue: "તમારો {n} દિવસનો સળંગ ક્રમ ચાલુ રાખવા {day} સબમિટ કરો", streakLastChance: "છેલ્લી તક: આજે મધરાત પહેલાં સબમિટ કરો",
-    sponsored: "દાતા", top: "ઉપર જાઓ", total: "આજે", editing: "ફેરફાર", noNiyams: "હજી કોઈ નિયમ ઉમેર્યા નથી.",
+    sponsored: "લાભાર્થી પરિવાર", top: "ઉપર જાઓ", total: "આજે", editing: "ફેરફાર", noNiyams: "હજી કોઈ નિયમ ઉમેર્યા નથી.",
     dayPoints: "આજે {n} પોઇન્ટ",
   },
   board: {
     title: "લીડરબોર્ડ", thisMonth: "આ મહિને", lastMonth: "ગયા મહિને", yourRank: "તમારો રેન્ક",
-    empty: "આ મહિને હજી કોઈ પોઇન્ટ નથી. પહેલા બનો!", pointsSuffix: "પોઇન્ટ", sponsorTitle: "દાતા",
+    empty: "આ મહિને હજી કોઈ પોઇન્ટ નથી. પહેલા બનો!", pointsSuffix: "પોઇન્ટ", sponsorTitle: "લાભાર્થી પરિવાર",
     notRanked: "લીડરબોર્ડમાં આવવા એક નિયમ નોંધો",
   },
   progress: {

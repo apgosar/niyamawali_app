@@ -60,18 +60,74 @@ export function BonusForm({ id }: { id: string }) {
   );
 }
 
+/** Shrinks a large photo in the browser (keeping its shape) so that it uploads quickly. */
+async function shrinkPhoto(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((done) => canvas.toBlob(done, "image/jpeg", 0.85));
+    return blob ? new File([blob], "donor.jpg", { type: "image/jpeg" }) : file;
+  } catch {
+    return file; // the browser cannot read it: let the server try, and report if it is not an image
+  }
+}
+
+const DONOR_FIELDS = [
+  { lang: "en", title: "Name in English", examples: ["Matushri Maniben Kunvarji Ghela Bhai Nandu Parivar", "Haste- Shrimati Sarojben Kishor Nandu", "Gaam- Pundi"] },
+  { lang: "gu", title: "Name in Gujarati", examples: ["માતુશ્રી મણીબેન કુંવર્જી ઘેલાભાઈ નંદુ પરિવાર", "હ. શ્રીમતી સરોજબેન કિશોર નંદુ", "ગામ : પુનડી"] },
+];
+
 export function DonorForm() {
   const [state, action, pending] = useActionState(saveDonor, null);
+  const [preview, setPreview] = useState<{ file: File; url: string } | null>(null);
+  const [preparing, setPreparing] = useState(false);
+
+  async function pick(file: File | undefined) {
+    if (preview) URL.revokeObjectURL(preview.url);
+    setPreview(null);
+    if (!file) return;
+    setPreparing(true);
+    const small = await shrinkPhoto(file);
+    setPreview({ file: small, url: URL.createObjectURL(small) });
+    setPreparing(false);
+  }
+
   return (
-    <form action={action} className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div><label className="label" htmlFor="name">Donor name</label><input id="name" name="name" className="field" maxLength={120} required /></div>
-        <div><label className="label" htmlFor="message_gu">Message (Gujarati)</label><input id="message_gu" name="message_gu" className="field" maxLength={240} /></div>
-        <div><label className="label" htmlFor="message_en">Message (English)</label><input id="message_en" name="message_en" className="field" maxLength={240} /></div>
+    <form action={(fd) => { if (preview) fd.set("photo", preview.file); action(fd); setPreview(null); }} className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        {DONOR_FIELDS.map((g) => (
+          <fieldset key={g.lang} className="space-y-2">
+            <legend className="label">{g.title} (3 lines)</legend>
+            {g.examples.map((ex, i) => (
+              <input key={i} name={`line_${g.lang}_${i + 1}`} className="field" maxLength={120} placeholder={ex}
+                aria-label={`${g.title}, line ${i + 1}`} required={g.lang === "en" && i === 0} />
+            ))}
+          </fieldset>
+        ))}
       </div>
-      <div><label className="label" htmlFor="photo">Photo / logo (optional)</label><input id="photo" name="photo" type="file" accept="image/*" className="field py-2" /></div>
+      <p className="hint -mt-2">Shown under the heading “Labharthi Parivaar:”. The grey text is only an example.</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div><label className="label" htmlFor="message_en">Extra message in English (optional)</label><input id="message_en" name="message_en" className="field" maxLength={240} /></div>
+        <div><label className="label" htmlFor="message_gu">Extra message in Gujarati (optional)</label><input id="message_gu" name="message_gu" className="field" maxLength={240} /></div>
+      </div>
+      <div>
+        <label className="label" htmlFor="photo">Family photo (optional)</label>
+        <input id="photo" name="photo" type="file" accept="image/*" className="field py-2" onChange={(e) => pick(e.target.files?.[0])} />
+        <p className="hint">A wide or square photo works best. It is shown large on the opening screen; the top may be cut off, so keep the people in the lower part.</p>
+        {preview && (
+          <figure className="mt-2 max-w-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview.url} alt="How the photo will look on the opening screen" className="aspect-[4/3] w-full rounded-2xl border border-gold-300 object-cover object-bottom" />
+            <figcaption className="hint">How it will look on the opening screen.</figcaption>
+          </figure>
+        )}
+      </div>
       <Msg s={state} />
-      <button className="btn btn-gold" disabled={pending}>{pending ? "Saving…" : "Add donor"}</button>
+      <button className="btn btn-gold" disabled={pending || preparing}>{pending ? "Saving…" : preparing ? "Preparing photo…" : "Add donor"}</button>
     </form>
   );
 }

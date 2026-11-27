@@ -29,7 +29,9 @@ export function Splash({ children }: { children: ReactNode }) {
     <div id="splash" role="presentation" aria-label="Divine Sanskar Shibir"
       onClick={() => setLeaving(true)}
       style={{ paddingTop: "var(--sat)", paddingBottom: "var(--sab)" }}
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 overflow-y-auto bg-[radial-gradient(900px_600px_at_50%_-10%,#fbe3b4_0%,#fbf0d8_45%,#fbf6ec_100%)] px-6 text-center transition-opacity duration-500 ${leaving ? "pointer-events-none opacity-0" : "opacity-100"}`}>
+      className={`fixed inset-0 z-[100] flex flex-col items-center overflow-y-auto bg-[radial-gradient(900px_600px_at_50%_-10%,#fbe3b4_0%,#fbf0d8_45%,#fbf6ec_100%)] px-6 text-center transition-opacity duration-500 ${leaving ? "pointer-events-none opacity-0" : "opacity-100"}`}>
+      {/* centred when it fits; scrolls from the top (nothing cut off) on very short screens */}
+      <div className="splash-body my-auto flex w-full flex-col items-center gap-6 py-4">
       <div className="splash-logo rounded-full p-1.5 shadow-[0_0_80px_-6px_rgba(212,175,97,0.95)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/icons/icon-512.png" alt="Divine Sanskar Shibir" width={208} height={208} className="h-52 w-52 rounded-full" fetchPriority="high" />
@@ -39,9 +41,10 @@ export function Splash({ children }: { children: ReactNode }) {
         <p className="mt-1 text-sm tracking-widest text-gold-600">{t.tagline}</p>
       </div>
       <div className="fade-up w-full max-w-sm empty:hidden" style={{ animationDelay: "800ms" }}>{children}</div>
-      <p aria-hidden className="fade-up absolute bottom-[max(1.5rem,var(--sab))] text-xs font-semibold text-gold-600" style={{ animationDelay: "1200ms" }}>
+      <p aria-hidden className="fade-up text-xs font-semibold text-gold-600" style={{ animationDelay: "1200ms" }}>
         {t.common.tapToContinue}
       </p>
+      </div>
     </div>
   );
 }

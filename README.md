@@ -199,3 +199,12 @@ Students have a **Rules** tab (📜) in the bottom bar with the Divine Sanskar S
   first-day, Tapasvi and Gyani badges, and streak bonuses, are taken back if submitted days do not support them.
 - Older days that were never submitted do not count. An admin can unlock them so the student can submit them.
 - Every “day” is a day in **India (IST)**, whatever timezone the server uses. An app left open overnight reloads itself on the new day.
+
+## 13. Donor (Labharthi Parivaar)
+
+Admin → **Donors**: type the name on up to **three lines** in English and in Gujarati (e.g. family name, *Haste- …*, *Gaam- …*) and choose the
+**family photo**. A wide or square photo works best; large photos are shrunk in the browser before upload.
+
+- **Opening screen:** the photo is shown large (if it is taller than the space, the **top** is cut off), with *Labharthi Parivaar:* and the lines.
+- **Niyam screen:** a small round picture and the lines; tapping it opens the whole photo with the full name.
+- The newest donor is the one shown; remove it to stop showing it. Run `npm run db:migrate` before deploying (safe to repeat).

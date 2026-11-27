@@ -4,6 +4,7 @@ import { requireStudent } from "@/lib/auth";
 import { getT } from "@/lib/lang";
 import { isValidMonth, monthLabel, monthOf, todayIST } from "@/lib/dates";
 import { currentDonor, monthlyLeaderboard } from "@/lib/leaderboard";
+import { donorLines } from "@/lib/donor";
 import { CertificateView } from "./CertificateView";
 
 export const metadata = { title: "Certificate" };
@@ -31,7 +32,7 @@ export default async function CertificatePage({ params }: { params: Promise<{ mo
           points={mine.points}
           rank={mine.rank}
           total={rows.length}
-          donor={donor?.name ?? null}
+          donor={donor ? donorLines(donor, lang).join("\n") : null}
           fileName={`niyamawali-${month}-${student.first_name}`}
         />
       )}

@@ -11,6 +11,7 @@ import { deletePhoto, savePhoto } from "@/lib/storage";
 import { saveSettings } from "@/lib/settings";
 import { parseStreakBonuses } from "@/lib/streaks";
 import { todayIST, fmtIST } from "@/lib/dates";
+import { DONOR_LINES, joinLines } from "@/lib/donor";
 import { grantEdit, revokeGrant } from "@/lib/grants";
 import { addNiyamRow, EditError, saveNiyamEdits, type NiyamEdit, type OptionEdit } from "@/lib/niyams-admin";
 
@@ -147,12 +148,14 @@ export async function addNiyamAction(_prev: ActionState | null, fd: FormData): P
 
 export async function saveDonor(_prev: ActionState | null, fd: FormData): Promise<ActionState> {
   await requireAdmin();
-  const name = s(fd, "name", 120);
-  if (!name) return { error: "Enter the donor's name." };
+  const lines = (lang: string) => joinLines(Array.from({ length: DONOR_LINES }, (_, i) => s(fd, `line_${lang}_${i + 1}`, 120)));
+  const nameEn = lines("en");
+  const nameGu = lines("gu");
+  if (!nameEn && !nameGu) return { error: "Enter the donor's name (at least line 1)." };
   let photoKey: string | null = null;
   const file = fd.get("photo");
   if (file instanceof File && file.size > 0) {
-    if (file.size > 5 * 1024 * 1024) return { error: "Photo is too large (max 5 MB)." };
+    if (file.size > 4 * 1024 * 1024) return { error: "Photo is too large (max 4 MB)." };
     try {
       photoKey = await savePhoto(Buffer.from(await file.arrayBuffer()), "donors");
     } catch {
@@ -161,8 +164,8 @@ export async function saveDonor(_prev: ActionState | null, fd: FormData): Promis
   }
   // a new donor is added on top: the most recently added donor is the one students see
   await query(
-    "insert into donors (name, photo_key, message_gu, message_en) values ($1,$2,$3,$4)",
-    [name, photoKey, s(fd, "message_gu", 240) || null, s(fd, "message_en", 240) || null],
+    "insert into donors (name, name_gu, photo_key, message_gu, message_en) values ($1,$2,$3,$4,$5)",
+    [nameEn || nameGu, nameGu || null, photoKey, s(fd, "message_gu", 240) || null, s(fd, "message_en", 240) || null],
   );
   revalidatePath("/admin/donors");
   revalidatePath("/", "layout");

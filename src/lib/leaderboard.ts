@@ -53,8 +53,8 @@ export async function awardTop10(month: string) {
 
 /** The donor to show: the most recently added one (no duration; the admin adds and removes donors by hand). */
 export async function currentDonor() {
-  const rows = await query<{ id: number; name: string; photo_key: string | null; message_gu: string | null; message_en: string | null }>(
-    "select id, name, photo_key, message_gu, message_en from donors order by created_at desc, id desc limit 1",
+  const rows = await query<{ id: number; name: string; name_gu: string | null; photo_key: string | null; message_gu: string | null; message_en: string | null }>(
+    "select id, name, name_gu, photo_key, message_gu, message_en from donors order by created_at desc, id desc limit 1",
   );
   return rows[0] ?? null;
 }

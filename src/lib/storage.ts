@@ -25,13 +25,21 @@ const authHeaders = (): Record<string, string> => {
 };
 const LOCAL_DIR = path.join(process.cwd(), ".data", "photos");
 
-/** Resize to a 480px square JPEG – also strips EXIF/location data. */
-export async function normalizePhoto(input: Buffer): Promise<Buffer> {
-  return sharp(input).rotate().resize(480, 480, { fit: "cover" }).jpeg({ quality: 80 }).toBuffer();
+/**
+ * Re-encodes an upload as JPEG – also strips EXIF/location data.
+ *  - students: a 480px square
+ *  - donors: the photo keeps its shape (a family photo is wide), at most 1600px on the longer side
+ */
+export async function normalizePhoto(input: Buffer, folder: "students" | "donors" = "students"): Promise<Buffer> {
+  const image = sharp(input).rotate();
+  const sized = folder === "donors"
+    ? image.resize(1600, 1600, { fit: "inside", withoutEnlargement: true }).flatten({ background: "#fbf6ec" })
+    : image.resize(480, 480, { fit: "cover" });
+  return sized.jpeg({ quality: 82 }).toBuffer();
 }
 
 export async function savePhoto(input: Buffer, folder: "students" | "donors"): Promise<string> {
-  const body = await normalizePhoto(input);
+  const body = await normalizePhoto(input, folder);
   const key = `${folder}/${randomUUID()}.jpg`;
   if (hasSupabase()) {
     const res = await fetch(`${supabaseUrl()}/storage/v1/object/${BUCKET}/${key}`, {
