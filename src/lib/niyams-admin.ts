@@ -40,8 +40,14 @@ export async function rescoreNiyam(id: number) {
     `update daily_logs l set points = l.value * n.points_per_unit from niyams n
       where l.niyam_id = n.id and n.id = $1 and n.type = 'count'`, [id]);
   await query(
-    `update daily_logs l set points = o.points from niyam_options o
-      where l.niyam_id = $1 and o.niyam_id = l.niyam_id and o.id = l.value`, [id]);
+    `update daily_logs l set points = o.points from niyam_options o, niyams n
+      where l.niyam_id = $1 and n.id = l.niyam_id and n.type = 'choice' and o.niyam_id = l.niyam_id and o.id = l.value`, [id]);
+  // multi-choice: add up the ticked options (the bits match optionBit in points.ts)
+  await query(
+    `update daily_logs l set points = (
+        select coalesce(sum(o.points), 0)::int from niyam_options o
+         where o.niyam_id = l.niyam_id and (l.value & (1 << (o.sort_order - 1))) <> 0)
+      from niyams n where l.niyam_id = $1 and n.id = l.niyam_id and n.type = 'multi'`, [id]);
 }
 
 /**

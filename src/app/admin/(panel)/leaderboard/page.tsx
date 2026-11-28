@@ -3,7 +3,7 @@ import { monthOf, monthLabel, todayIST, isValidMonth, addMonths } from "@/lib/da
 import { awardTop10, currentDonor, monthlyLeaderboard } from "@/lib/leaderboard";
 import { donorLines } from "@/lib/donor";
 import { Avatar } from "@/components/Avatar";
-import { ShareResults } from "./ShareResults";
+import { ResultsPanel } from "./ResultsPanel";
 
 export const metadata = { title: "Leaderboard" };
 
@@ -27,12 +27,15 @@ export default async function AdminLeaderboard({ searchParams }: { searchParams:
         <a href={`/admin/leaderboard/export?month=${month}`} className="btn btn-ghost sm:ml-auto">⬇ Export CSV</a>
       </div>
       <h1 className="text-2xl font-bold text-gold-700">{monthLabel(month, "en")}</h1>
-      <p className="text-sm text-muted">Rankings are visible to admins only. Students see just their own points.</p>
+      <p className="text-sm text-muted">
+        Rankings are visible to admins only; students see just their own points. Students who have not attended a previous
+        Divine Sanskar Shibir are not ranked.
+      </p>
 
-      {closed && top.length > 0 && (
-        <ShareResults month={month} monthEn={monthLabel(month, "en")} monthGu={monthLabel(month, "gu")} rows={top} donor={donor ? ["Labharthi Parivaar:", ...donorLines(donor, "en")].join("\n") : null} />
+      {closed && (
+        <ResultsPanel key={month} month={month} monthEn={monthLabel(month, "en")} monthGu={monthLabel(month, "gu")} rows={top} donor={donor ? ["Labharthi Parivaar:", ...donorLines(donor, "en")].join("\n") : null} />
       )}
-      {!closed && <p className="rounded-xl bg-gold-50 p-3 text-sm text-gold-700">Sharing opens once the month has ended.</p>}
+      {!closed && <p className="rounded-xl bg-gold-50 p-3 text-sm text-gold-700">The Top 3 picture and the students’ results link appear once the month has ended.</p>}
 
       <div className="card overflow-x-auto">
         <table className="w-full min-w-[36rem] text-sm">
@@ -47,7 +50,7 @@ export default async function AdminLeaderboard({ searchParams }: { searchParams:
                 <td className="p-3 text-right num text-lg">{r.points}</td>
               </tr>
             ))}
-            {rows.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-muted">No points recorded for this month.</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-muted">No ranked students for this month.</td></tr>}
           </tbody>
         </table>
       </div>

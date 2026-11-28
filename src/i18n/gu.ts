@@ -10,7 +10,7 @@ export const gu: Dict = {
     yes: "હા", no: "ના", required: "જરૂરી", optional: "વૈકલ્પિક", retry: "ફરી પ્રયત્ન કરો", close: "બંધ કરો",
     somethingWrong: "કંઈક ભૂલ થઈ. કૃપા કરી ફરી પ્રયત્ન કરો.", offline: "તમે ઑફલાઇન છો – ઑનલાઇન થતાં જ ફેરફારો સેવ થશે",
     days: "દિવસ", day: "દિવસ", copy: "કૉપી", copied: "કૉપી થયું!", done: "થઈ ગયું", tapToContinue: "આગળ વધવા ટૅપ કરો", share: "શેર કરો", download: "ડાઉનલોડ",
-    month: "મહિનો", rank: "રેન્ક", you: "તમે", gatha: "ગાથા",
+    month: "મહિનો", you: "તમે", gatha: "ગાથા",
   },
   login: {
     title: "ફરી સ્વાગત છે", subtitle: "મોબાઇલ નંબર અને PIN થી લૉગિન કરો",
@@ -47,7 +47,8 @@ export const gu: Dict = {
     pathshala: "શું તમે પાઠશાળા જાઓ છો?", pathshalaWhich: "કઈ પાઠશાળા?", pathshalaHint: "દા.ત. આર્યરક્ષિત, RSP",
     gender: "લિંગ", male: "છોકરો (M)", female: "છોકરી (F)",
     standard: "હાલમાં ભણતા ધોરણ", standardPick: "ધોરણ પસંદ કરો",
-    previousShibir: "અગાઉ કરેલી Divine Sanskar Shibir", previousHint: "જે લાગુ પડે તે બધા પસંદ કરો. ન હોય તો ખાલી રાખો.",
+    previousShibir: "અગાઉ કરેલી Divine Sanskar Shibir", previousHint: "જે લાગુ પડે તે બધા પસંદ કરો, અથવા “ઉપરમાંથી કોઈ નહીં”. આ જવાબ પછી બદલી શકાશે નહીં.", previousFixed: "આ જવાબ બદલી શકાતો નથી.",
+    noneOfAbove: "ઉપરમાંથી કોઈ નહીં",
     selectPlaceholder: "પસંદ કરો…", nSelected: "{n} પસંદ કર્યા", genderFixed: "લિંગ તમારા વિદ્યાર્થી ID નો ભાગ છે અને બદલી શકાતું નથી.",
     pinHelp: "૪ અંકનો PIN પસંદ કરો. તમે આપેલા કોઈ પણ મોબાઇલ નંબર સાથે આ PIN થી લૉગિન કરશો.",
     pin: "PIN પસંદ કરો", confirmPin: "PIN ફરી લખો", pinMismatch: "બંને PIN સરખા નથી",
@@ -58,6 +59,7 @@ export const gu: Dict = {
     errFix: "કૃપા કરી લાલ નિશાનવાળા ખાના સુધારો.",
   },
   today: {
+    sutra: "સૂત્રનું નામ", sutraHint: "દા.ત. લોગસ્સ", gathaNo: "ગાથા નંબર", gathaNoHint: "દા.ત. 5 અથવા 5-7",
     dayTotal: "આજના પોઇન્ટ", monthTotal: "આ મહિને", streak: "સળંગ દિવસ", streakNudge: "તમારી સળંગ શ્રેણી જાળવવા આજનો દિવસ સબમિટ કરો 🪔",
     saved: "સેવ થયું ✓", saving: "સેવ થઈ રહ્યું છે…", queued: "ઑનલાઇન થતાં સેવ થશે", locked: "આ દિવસ બંધ છે",
     editHint: "દિવસ સબમિટ ન કરો ત્યાં સુધી તમે આજે અને છેલ્લા {n} દિવસ સુધી ફેરફાર કરી શકો છો. સબમિટ કરેલો દિવસ બંધ થઈ જાય છે.", todayLabel: "આજે", yesterday: "ગઈકાલે",
@@ -103,9 +105,9 @@ export const gu: Dict = {
     studentId: "વિદ્યાર્થી ID", lockedShort: "બંધ",
   },
   results: {
-    title: "{month} ના પરિણામ", top3: "મહિનાના ટોપ ૩", yourResult: "તમારું પરિણામ", points: "તમારા પોઇન્ટ", rank: "તમારો રેન્ક",
-    rankOf: "{total} માંથી", noPoints: "આ મહિને તમારા કોઈ પોઇન્ટ નથી.", notClosed: "મહિનો પૂરો થયા પછી પરિણામ મળશે.",
-    certificate: "મારું પ્રમાણપત્ર બનાવો", home: "હોમ પર પાછા જાઓ", empty: "આ મહિનાનું પરિણામ હજી નથી.",
+    title: "{month} ના પરિણામ", yourResult: "તમારું પરિણામ", points: "તમારા પોઇન્ટ",
+    noPoints: "આ મહિને તમારા કોઈ પોઇન્ટ નથી.", notClosed: "મહિનો પૂરો થયા પછી પરિણામ મળશે.",
+    certificate: "મારું પ્રમાણપત્ર બનાવો", home: "હોમ પર પાછા જાઓ",
   },
   badge: {
     share: "WhatsApp પર શેર કરો", earnedOn: "{date} એ મળ્યો", notEarned: "હજી મળ્યો નથી – આગળ વધતા રહો!", close: "બંધ કરો",

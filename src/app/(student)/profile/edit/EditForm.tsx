@@ -6,7 +6,7 @@ import { PhotoPicker } from "@/components/PhotoPicker";
 import { MultiSelect } from "@/components/MultiSelect";
 import { Combobox } from "@/components/Combobox";
 import { normalizeSangh } from "@/lib/village-text";
-import { PREVIOUS_SHIBIRS, STANDARDS, parseShibirs, standardLabel } from "@/lib/profile-options";
+import { NO_SHIBIR, PREVIOUS_SHIBIRS, STANDARDS, pickShibirs, shibirLabels, shibirSelection, standardLabel } from "@/lib/profile-options";
 
 function Field({ k, label, error, children }: { k: string; label: string; error?: string | null; children: React.ReactNode }) {
   return (
@@ -23,8 +23,9 @@ export function EditForm({ initial, photoKey, villages, sanghs }: { initial: Rec
   const r = t.register;
   const router = useRouter();
   const [v, setV] = useState(initial);
-  const [shibirs, setShibirs] = useState<string[]>(parseShibirs(initial.previous_shibirs));
+  const [shibirs, setShibirs] = useState<string[]>(shibirSelection(initial.previous_shibirs));
   const genderLocked = initial.gender === "M" || initial.gender === "F"; // part of the Student ID: set once
+  const shibirsLocked = !!initial.previous_shibirs; // decides who is ranked: set once
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -40,7 +41,7 @@ export function EditForm({ initial, photoKey, villages, sanghs }: { initial: Rec
     setBusy(true);
     const fd = new FormData();
     for (const [k, val] of Object.entries(v)) if (k !== "previous_shibirs") fd.set(k, String(val ?? ""));
-    shibirs.forEach((s) => fd.append("previous_shibirs", s));
+    if (!shibirsLocked) shibirs.forEach((s) => fd.append("previous_shibirs", s));
     if (photo) fd.set("photo", photo, "photo.jpg");
     const res = await fetch("/api/profile", { method: "POST", body: fd });
     const data = await res.json().catch(() => ({}));
@@ -99,11 +100,22 @@ export function EditForm({ initial, photoKey, villages, sanghs }: { initial: Rec
         </div>
       </div>
       {v.pathshala === "yes" && <Field k="pathshala_name" label={r.pathshalaWhich} error={msg(errors.pathshala_name)}>{input("pathshala_name")}</Field>}
-      <Field k="previous_shibirs" label={r.previousShibir}>
-        <MultiSelect id="previous_shibirs" options={PREVIOUS_SHIBIRS.map((s) => ({ value: s.code, label: s.label }))}
-          value={shibirs} onChange={(next) => { setShibirs(next); setDone(false); }} placeholder={r.selectPlaceholder} />
-        <p className="hint">{r.previousHint}</p>
-      </Field>
+      {shibirsLocked ? (
+        <div>
+          <p className="label">{r.previousShibir}</p>
+          <p className="rounded-xl border-2 border-gold-100 bg-gold-50 px-4 py-3 font-semibold">
+            {initial.previous_shibirs === NO_SHIBIR ? r.noneOfAbove : shibirLabels(initial.previous_shibirs).join(", ")}
+          </p>
+          <p className="hint">{r.previousFixed}</p>
+        </div>
+      ) : (
+        <Field k="previous_shibirs" label={r.previousShibir} error={msg(errors.previous_shibirs)}>
+          <MultiSelect id="previous_shibirs" invalid={!!errors.previous_shibirs}
+            options={[...PREVIOUS_SHIBIRS.map((s) => ({ value: s.code as string, label: s.label as string })), { value: NO_SHIBIR, label: r.noneOfAbove }]}
+            value={shibirs} onChange={(next) => { setShibirs((before) => pickShibirs(before, next)); setDone(false); }} placeholder={r.selectPlaceholder} />
+          <p className="hint">{r.previousHint}</p>
+        </Field>
+      )}
       {errors.form && <p role="alert" className="err">{t.common.somethingWrong}</p>}
       <button type="submit" className="btn btn-gold w-full" disabled={busy}>{done ? `${t.profile.saved} ✓` : t.common.save}</button>
     </form>

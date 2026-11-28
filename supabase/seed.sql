@@ -1,4 +1,4 @@
--- Seed data: the 30 niyams from the printed "ગુજરાતી નિયમાવલી" sheet.
+-- Seed data: the 30 niyams from the printed "ગુજરાતી નિયમાવલી" sheet, plus Rai / Devsi Pratikraman.
 -- Every Yes/No niyam starts with a PLACEHOLDER of 10 points – set the real values in Admin > Niyams.
 -- Safe to run more than once: it only inserts when the tables are empty.
 
@@ -49,12 +49,30 @@ from niyams n,
 where n.sort_order = 12
   and not exists (select 1 from niyam_options);
 
+-- Rai / Devsi Pratikraman: one multiple-choice niyam (tick one or both, 50 points each).
+-- Added once, also to databases that were seeded earlier; it gets the next free number.
+insert into niyams (sort_order, name_gu, name_en, type, points, points_per_unit, max_count)
+select coalesce(max(sort_order), 0) + 1, 'રાઈ / દેવસિ પ્રતિક્રમણ કરવું', 'Do Rai / Devsi Pratikraman', 'multi', 0, 0, 0
+  from niyams
+having not exists (select 1 from niyams where type = 'multi');
+
+-- sort_order matters here: a student's ticks are stored by it (see optionBit in src/lib/points.ts)
+insert into niyam_options (niyam_id, code, label_gu, label_en, points, sort_order)
+select n.id, o.code, o.label_gu, o.label_en, o.points, o.sort_order
+from niyams n,
+  (values
+    ('rai',   'રાઈ',   'Rai',   50, 1),
+    ('devsi', 'દેવસિ', 'Devsi', 50, 2)
+  ) as o(code, label_gu, label_en, points, sort_order)
+where n.type = 'multi'
+  and not exists (select 1 from niyam_options x where x.niyam_id = n.id);
+
 insert into settings (key, value) values
   ('edit_window_days',    '3'),
   ('referrals_enabled',   '0'),
   ('referral_bonus',      '100'),
   ('referral_unlock_days','3'),
-  ('streak_bonuses',      '7:50,21:100,51:200,108:500'),
+  ('streak_bonuses',      '7:50,21:100,54:200,108:500'),
   ('grant_default_days',  '15'),
   ('grant_default_hours', '24')
 on conflict (key) do nothing;

@@ -154,7 +154,7 @@ export function SettingsForm({ values }: { values: Record<string, string> }) {
         <input id="referral_unlock_days" name="referral_unlock_days" type="number" min={1} defaultValue={values.referral_unlock_days} className="field" disabled={!referrals} />
         <p className="hint">The new student must log on this many different days before both get the bonus.</p></div>
       <div><label className="label" htmlFor="streak_bonuses">Streak bonuses</label>
-        <input id="streak_bonuses" name="streak_bonuses" defaultValue={values.streak_bonuses} className="field" placeholder="7:50,21:100,51:200,108:500" />
+        <input id="streak_bonuses" name="streak_bonuses" defaultValue={values.streak_bonuses} className="field" placeholder="7:50,21:100,54:200,108:500" />
         <p className="hint">days:points pairs, comma separated. Each is paid once per student. Leave empty to disable.</p></div>
       <div className="rounded-2xl border border-gold-100 bg-gold-50 p-3">
         <p className="mb-2 text-sm font-bold text-gold-700">Default for “Unlock editing”</p>

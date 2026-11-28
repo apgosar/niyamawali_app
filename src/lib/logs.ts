@@ -22,14 +22,27 @@ export async function getNiyams(): Promise<{ niyams: NiyamDef[]; options: Option
 export interface DayEntry {
   value: number;
   points: number;
+  /** optional, gatha (count) entries only */
+  sutra?: string;
+  gatha_no?: string;
 }
 
+/** What a student may add to a gatha entry; "" clears a box. */
+export interface EntryDetails {
+  sutra?: string;
+  gatha_no?: string;
+}
+
+const tidy = (v: string | undefined, max: number) => (v ?? "").replace(/\s+/g, " ").trim().slice(0, max).trim() || null;
+
 export async function getDayEntries(studentId: string, date: string): Promise<Record<number, DayEntry>> {
-  const rows = await query<{ niyam_id: number; value: number; points: number }>(
-    "select niyam_id, value, points from daily_logs where student_id = $1 and log_date = $2",
+  const rows = await query<{ niyam_id: number; value: number; points: number; sutra: string | null; gatha_no: string | null }>(
+    "select niyam_id, value, points, sutra, gatha_no from daily_logs where student_id = $1 and log_date = $2",
     [studentId, date],
   );
-  return Object.fromEntries(rows.map((r) => [r.niyam_id, { value: r.value, points: r.points }]));
+  return Object.fromEntries(rows.map((r) => [r.niyam_id, {
+    value: r.value, points: r.points, ...(r.sutra ? { sutra: r.sutra } : {}), ...(r.gatha_no ? { gatha_no: r.gatha_no } : {}),
+  }]));
 }
 
 export interface Totals {
@@ -160,7 +173,7 @@ export type SubmitResult = SaveResult & { access: AccessInfo };
  * Ticking does not touch streaks or badges: that happens when the day is submitted. The exception is a change
  * to an already submitted day (possible while an admin has unlocked it), which is re-checked straight away.
  */
-export async function saveEntry(studentId: string, date: string, niyamId: number, value: number): Promise<SaveResult> {
+export async function saveEntry(studentId: string, date: string, niyamId: number, value: number, details?: EntryDetails): Promise<SaveResult> {
   if (!isValidYmd(date)) throw new LogError("bad_date");
   const today = todayIST();
   const state = await getEditState(studentId, date, today);
@@ -179,12 +192,16 @@ export async function saveEntry(studentId: string, date: string, niyamId: number
   } else {
     const points = scoreEntry(niyam, value, options);
     if (points === null) throw new LogError("bad_value");
+    // Sutra / Gatha number belong to gatha entries only; without `details` whatever is already saved stays.
+    const extra = niyam.type === "count" ? details : undefined;
     await query(
-      `insert into daily_logs (student_id, log_date, niyam_id, value, points)
-       values ($1, $2, $3, $4, $5)
+      `insert into daily_logs (student_id, log_date, niyam_id, value, points, sutra, gatha_no)
+       values ($1, $2, $3, $4, $5, $6, $7)
        on conflict (student_id, log_date, niyam_id)
-       do update set value = excluded.value, points = excluded.points, updated_at = now()`,
-      [studentId, date, niyamId, value, points],
+       do update set value = excluded.value, points = excluded.points, updated_at = now(),
+         sutra = case when $8::boolean then excluded.sutra else daily_logs.sutra end,
+         gatha_no = case when $8::boolean then excluded.gatha_no else daily_logs.gatha_no end`,
+      [studentId, date, niyamId, value, points, tidy(extra?.sutra, 100), tidy(extra?.gatha_no, 50), !!extra],
     );
   }
 
@@ -275,6 +292,7 @@ async function evaluateBadges(studentId: string, date: string, dates: string[], 
     first_step: dates.length > 0,
     streak_7: best >= 7,
     streak_21: best >= 21,
+    streak_54: best >= 54,
     streak_108: best >= 108,
     tapasvi: (tapas?.n ?? 0) >= 10,
     gyani: (gathas?.n ?? 0) >= 25,

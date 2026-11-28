@@ -68,18 +68,18 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
 - Forgot PIN → admin opens the student, taps **Reset PIN**, tells the family the temporary PIN; the student must then
   choose a new one. (All their devices are signed out when this happens.)
 - **Today** screen: tap a niyam to turn it green. #12 is a one-of-four choice (Biyasana 30 / Ekasana 40 / Ayambil 50 /
-  Upvas 60), #6 is a gatha counter (× 20 points). Day total and month total update instantly; saving happens in the
+  Upvas 60), #6 is a gatha counter (× 20 points), #31 is Rai / Devsi Pratikraman (tick one or both, 50 points each). Day total and month total update instantly; saving happens in the
   background and works offline (changes sync when the phone is back online).
 - **Submit & lock:** a student can change today and the previous N−1 days (N = *Edit window* in Settings, default 3) until they tap
   **Submit day** and confirm. A submitted day is **locked**: only an admin unlock can reopen it. Everyone has a unique
   **Student ID** like `26-M-00001` (joining year + gender M/F + running number; students who registered before gender was asked keep the older form `26-00001`), shown on the Today and Profile screens so they can quote it to the admin.
-- **Rankings are admin-only.** Students see only their own points. Once a month has ended, the admin shares the result
-  (see below) and students open the link to see the top 3, their own points and rank, and a button for their certificate.
+- **Rankings are admin-only.** Students see only their own points. Once a month has ended, the admin sends out the results link
+  (see below) and students open it to see their own points and a button for their certificate. No names or ranks are shown.
 - **Referral** (can be switched **on / off** under Admin → Settings → *Referral programme*; it is OFF by default): Profile → Invite friends. Shares a link like `/register?ref=ABC123` (WhatsApp / share sheet / copy).
   The new student sees “Invited by ‹name›”. Once the new student has logged on 3 different days, **both** get 100
   bonus points (amount and days are admin settings).
-- **Gamification:** day streak 🪔 with milestone bonuses (7/21/51/108 days → 50/100/200/500 points by default),
-  9 badges on the **Progress** tab (tap a badge to open it and share it on WhatsApp), and a shareable **monthly certificate** (PNG) once a month has ended.
+- **Gamification:** day streak 🪔 with milestone bonuses (7/21/54/108 days → 50/100/200/500 points by default),
+  10 badges on the **Progress** tab (tap a badge to open it and share it on WhatsApp), and a shareable **monthly certificate** (PNG) once a month has ended.
 - **Printable sheet:** Profile → *Printable niyam sheet*: pick a month and a period (full month, days 1–15, day 16–end) and
   download a one-page A4 landscape **PDF** or **Excel** file with the niyam list, day columns, total row and signature lines.
 
@@ -96,13 +96,13 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
   Points are stored with each entry, so changing points affects **new** entries only – tick *Also re-score past entries*
   (above the bottom Save button) to re-score what students already logged for the niyams whose points you changed
   (do this once when you replace the placeholder 10 points).
-- **Donors:** sponsor for a month (name, optional photo, Gujarati/English message) – shown on every student’s home,
-  at the top of the leaderboard and on certificates.
+- **Donors:** sponsor (name, optional photo, Gujarati/English message) – shown on every student’s home,
+  on the opening screen and on certificates.
 - **Unlock edits** (for boarding / hostel students and corrections): search by **Student ID** (or name / phone), choose how many past
   days to unlock (default 15, today counts as day 1) and for how many hours (default 24), add a note, and the student can change those
   days — even submitted ones — until the time is up. Active unlocks are listed and can be locked again at any time. Defaults are in Settings.
-- **Leaderboard** (admin-only rankings): for a finished month, *Share on WhatsApp* sends a picture of the top 3 (photos + names) with a
-  message and a link to `/results/YYYY-MM`; *Download picture* and *Copy message* are there for desktops.
+- **Leaderboard** (admin-only rankings; only students who attended a previous Shibir are ranked): for a finished month, *Download picture*
+  saves the top 3 picture for your own use, and *Copy message* copies a message with the students’ results link `/results/YYYY-MM`.
 - **Settings** (referral programme on/off, edit window, referral bonus/unlock days, streak bonuses), **Admins** (add teachers,
   change password).
 
@@ -124,7 +124,7 @@ Other commands: `npm test` (unit + integration tests), `npm run build`, `npm run
 | `src/lib/logs.ts` | Saving a niyam + streak / referral / badge rules |
 | `src/lib/admin-data.ts` | Dashboard + student filter SQL |
 | `src/i18n/` | English + Gujarati text |
-| `supabase/migrations`, `supabase/seed.sql` | Database schema and the 30 niyams |
+| `supabase/migrations`, `supabase/seed.sql` | Database schema and the 31 niyams |
 | `public/sw.js` | Service worker (offline page + asset caching) |
 
 ---
@@ -153,8 +153,8 @@ It is safe to run repeatedly. Existing students are numbered in the order they j
   until the student taps to continue, once per app launch. Admin pages never show it. Donor photos are public so they can appear before
   login; student photos stay private.
 - **Registration** also asks for **gender** (M/F, part of the Student ID and fixed once set), **current standard** (1st – 15th) and a
-  multi-select dropdown **Previous Divine Sanskar Shibir attended** (Jogeshwari, Deolali, Kutch - Don, Kutch - Pundi). Students who registered
-  earlier can fill these in under Profile → *My details*. The admin sees them on the student page and in the CSV export.
+  multi-select dropdown **Previous Divine Sanskar Shibir attended** (Jogeshwari, Deolali, Kutch - Don, Kutch - Pundi). Students who have no
+  saved answer can fill these in under Profile → *My details*. The admin sees them on the student page and in the CSV export.
 - **Admin → Daily entries** shows every student for one date (who entered, how many niyams, points, whether the day was submitted and when).
   Open a student (or use *Daily entries* on a student page) for a month grid like the paper sheet — ✓, gatha counts and choice letters per
   day, with 🔒 for submitted days — plus a day-by-day list with exact values and the time each entry was last changed. CSV export for both.
@@ -209,7 +209,25 @@ Admin → **Donors**: type the name on up to **three lines** in English and in G
 - **Niyam screen:** a small round picture and the lines; tapping it opens the whole photo with the full name.
 - The newest donor is the one shown; remove it to stop showing it. Run `npm run db:migrate` before deploying (safe to repeat).
 
-## 14. Sangh list
+## 14. Rai / Devsi Pratikraman, Sutra and Gatha number, ranking
+
+- **Multiple-choice niyam:** *Rai / Devsi Pratikraman* gives 50 points for each one ticked (100 for both). Change names and points under
+  Admin → Niyams. It is added by `supabase/seed.sql` with the next free number.
+- **Gatha niyam:** once at least one gatha is counted, two optional boxes appear (*Sutra name*, *Gatha no.*), one pair per day. The admin sees
+  them on the student’s daily entries page and in its CSV export.
+- **Previous Shibir** is now required at registration; *None of the above* is one of the answers. Once saved, the answer **cannot be
+  changed** by the student (*My details* shows it read-only), because it decides who is ranked. A student with no saved answer gives it once
+  on *My details*.
+- **Admin → a student → *✎ Edit profile*** changes any profile detail: photo, names, date of birth, gender, village, parents and phone
+  numbers, residence, Sangh, standard, dharmik abhyas, Pathshala and previous Shibirs. Changing the gender changes the M / F in the Student ID
+  (the number stays). Changing the Shibir answer to *None of the above* removes the student's Top 10 badge. Login numbers are the ones saved
+  here; use *Reset PIN* for the PIN.
+- **Ranking** (admin leaderboard, its CSV, the top 3 picture and the Top 10 badge) leaves out students who answered *None of the above* or
+  have not answered.
+- A **54-day streak** badge was added, and the default streak bonus that was at 51 days is now at 54.
+- Run `npm run db:migrate` before deploying (safe to repeat).
+
+## 15. Sangh list
 
 The **Sangh** field on registration and *Edit profile* is a search box like the Village field. It starts with the 103 Sanghs of the
 *Consolidated Directory of Jain Sanghs* (`supabase/migrations/0007_sanghs.sql`). Search ignores capitals, copes with spellings such as

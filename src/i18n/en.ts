@@ -8,7 +8,7 @@ export const en = {
     yes: "Yes", no: "No", required: "Required", optional: "Optional", retry: "Try again", close: "Close",
     somethingWrong: "Something went wrong. Please try again.", offline: "You are offline – changes will sync automatically",
     days: "days", day: "day", copy: "Copy", copied: "Copied!", done: "Done", tapToContinue: "Tap to continue", share: "Share", download: "Download",
-    month: "Month", rank: "Rank", you: "You", gatha: "gatha",
+    month: "Month", you: "You", gatha: "gatha",
   },
   login: {
     title: "Welcome back", subtitle: "Log in with your phone number and PIN",
@@ -45,7 +45,8 @@ export const en = {
     pathshala: "Do you go to Pathshala?", pathshalaWhich: "Which Pathshala?", pathshalaHint: "e.g. Aryarakshit, RSP",
     gender: "Gender", male: "Male (M)", female: "Female (F)",
     standard: "Current standard studying", standardPick: "Select standard",
-    previousShibir: "Previous Divine Sanskar Shibir attended", previousHint: "Tick all that apply. Leave empty if none.",
+    previousShibir: "Previous Divine Sanskar Shibir attended", previousHint: "Tick all that apply, or “None of the above”. This cannot be changed later.", previousFixed: "This answer cannot be changed.",
+    noneOfAbove: "None of the above",
     selectPlaceholder: "Select…", nSelected: "{n} selected", genderFixed: "Gender is part of your Student ID and cannot be changed.",
     pinHelp: "Choose a 4-digit PIN. You will use it with any of your phone numbers to log in.",
     pin: "Choose PIN", confirmPin: "Confirm PIN", pinMismatch: "The two PINs do not match",
@@ -56,6 +57,7 @@ export const en = {
     errFix: "Please fix the highlighted fields.",
   },
   today: {
+    sutra: "Sutra name", sutraHint: "e.g. Logassa", gathaNo: "Gatha no.", gathaNoHint: "e.g. 5 or 5-7",
     dayTotal: "Today's points", monthTotal: "This month", streak: "Day streak", streakNudge: "Submit today to keep your streak alive 🪔",
     saved: "Saved ✓", saving: "Saving…", queued: "Will sync when online", locked: "This day is locked",
     editHint: "You can edit today and the last {n} days until you submit a day. A submitted day is locked.", todayLabel: "Today", yesterday: "Yesterday",
@@ -101,9 +103,9 @@ export const en = {
     studentId: "Student ID", lockedShort: "Locked",
   },
   results: {
-    title: "{month} results", top3: "Top 3 of the month", yourResult: "Your result", points: "Your points", rank: "Your rank",
-    rankOf: "of {total}", noPoints: "You have no points in this month.", notClosed: "Results will be available after the month ends.",
-    certificate: "Generate my certificate", home: "Back to home", empty: "No results for this month yet.",
+    title: "{month} results", yourResult: "Your result", points: "Your points",
+    noPoints: "You have no points in this month.", notClosed: "Results will be available after the month ends.",
+    certificate: "Generate my certificate", home: "Back to home",
   },
   badge: {
     share: "Share on WhatsApp", earnedOn: "Earned on {date}", notEarned: "Not earned yet – keep going!", close: "Close",

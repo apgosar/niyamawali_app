@@ -31,14 +31,15 @@ describe("printable sheet data", () => {
   it("lists the niyams with their points, in Gujarati and English", async () => {
     const en = await buildSheet("2026-11", "full", "en");
     const gu = await buildSheet("2026-11", "full", "gu");
-    expect(en.rows).toHaveLength(30);
+    expect(en.rows).toHaveLength(31);
     expect(en.rows[0]).toMatchObject({ no: 1, points: "10", kind: "boolean" });
     expect(en.rows.find((r) => r.kind === "count")!.points).toBe("20×"); // gatha
     expect(en.rows.find((r) => r.kind === "choice")!.points).toBe("30–60"); // biyasana … upvas
     expect(en.rows[0].name).toMatch(/Navkar/);
     expect(gu.rows[0].name).toMatch(/નવકાર/);
-    expect(en.choiceLegend).toBe("B = Biyasana · E = Ekasana · A = Ayambil · U = Upvas");
-    expect(gu.choiceLegend.split(" · ")).toHaveLength(4);
+    expect(en.rows.find((r) => r.kind === "multi")).toMatchObject({ no: 31, points: "50–100" }); // Rai / Devsi
+    expect(en.choiceLegend).toBe("B = Biyasana · E = Ekasana · A = Ayambil · U = Upvas · R = Rai · D = Devsi");
+    expect(gu.choiceLegend.split(" · ")).toHaveLength(6);
     expect(en.hasCount).toBe(true);
   });
 

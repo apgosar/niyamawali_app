@@ -14,8 +14,8 @@ import { badgeByCode } from "@/lib/badges";
 import type { AccessInfo } from "@/lib/access";
 import type { StreakRescue } from "@/lib/streaks";
 
-type Entries = Record<number, { value: number; points: number }>;
-interface Op { date: string; niyamId: number; value: number }
+type Entries = Record<number, { value: number; points: number; sutra?: string; gatha_no?: string }>;
+interface Op { date: string; niyamId: number; value: number; sutra?: string; gatha_no?: string }
 type Status = "saving" | "saved" | "queued";
 
 interface Props {
@@ -49,6 +49,7 @@ export function TodayClient(p: Props) {
   const [showBar, setShowBar] = useState(false); // floating bar appears once the totals card scrolls away
   const queue = useRef<Op[]>([]);
   const running = useRef(false);
+  const typing = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const month = monthOf(p.today);
 
   const entries = cache[date];
@@ -125,6 +126,13 @@ export function TodayClient(p: Props) {
     return () => io.disconnect();
   }, []);
 
+  // Leaving the app in the middle of the typing pause: send what is waiting straight away.
+  useEffect(() => {
+    const hidden = () => { if (document.visibilityState === "hidden") flush(); };
+    document.addEventListener("visibilitychange", hidden);
+    return () => document.removeEventListener("visibilitychange", hidden);
+  }, [flush]);
+
   // The app is often left open overnight: when a new day has started in India, reload so "Today" is really today.
   useEffect(() => {
     const check = () => { if (document.visibilityState === "visible" && todayIST() !== p.today) window.location.reload(); };
@@ -145,23 +153,30 @@ export function TodayClient(p: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function change(niyam: NiyamDef, value: number) {
+  function change(niyam: NiyamDef, value: number, details?: { sutra: string; gatha_no: string }) {
     if (!editable) return;
     const prev = entries?.[niyam.id];
     const points = value ? (scoreEntry(niyam, value, p.options) ?? 0) : 0;
+    // gatha entries carry their Sutra / Gatha number along with every change
+    const extra = niyam.type === "count" ? (details ?? { sutra: prev?.sutra ?? "", gatha_no: prev?.gatha_no ?? "" }) : {};
     setCache((c) => {
       const d = { ...(c[date] ?? {}) };
-      if (value) d[niyam.id] = { value, points }; else delete d[niyam.id];
+      if (value) d[niyam.id] = { value, points, ...extra }; else delete d[niyam.id];
       return { ...c, [date]: d };
     });
     if (monthOf(date) === month) {
       setTotals((tt) => ({ ...tt, monthTotal: tt.monthTotal + points - (prev?.points ?? 0) }));
     }
-    const op: Op = { date, niyamId: niyam.id, value };
+    const op: Op = { date, niyamId: niyam.id, value, ...extra };
     queue.current = queue.current.filter((o) => !(o.date === op.date && o.niyamId === op.niyamId));
     queue.current.push(op);
     persist();
-    flush();
+    clearTimeout(typing.current);
+    if (details) {
+      // typing in a text box: wait for a pause rather than saving every letter
+      setStatus("saving");
+      typing.current = setTimeout(flush, 800);
+    } else flush();
   }
 
   /** Wait until every tap has reached the server (false = still offline). */
@@ -320,7 +335,8 @@ export function TodayClient(p: Props) {
         {p.niyams.length === 0 && <p className="card p-6 text-center text-muted">{t.today.noNiyams}</p>}
         {entries && p.niyams.map((nm) => (
           <NiyamCard key={`${date}-${nm.id}`} niyam={nm} options={p.options} value={entries[nm.id]?.value ?? 0}
-            locked={!editable} onChange={(v) => change(nm, v)} />
+            sutra={entries[nm.id]?.sutra} gathaNo={entries[nm.id]?.gatha_no}
+            locked={!editable} onChange={(v, details) => change(nm, v, details)} />
         ))}
         {!entries && Array.from({ length: 6 }).map((_, i) => <div key={i} className="skeleton h-16 w-full !rounded-2xl" />)}
 

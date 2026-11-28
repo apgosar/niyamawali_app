@@ -69,7 +69,7 @@ export function NiyamsForm({ niyams, options }: { niyams: NiyamRow[]; options: O
                 <div><label className="label" htmlFor={`n${n.id}_en`}>English</label><input id={`n${n.id}_en`} name={`n${n.id}_en`} defaultValue={n.name_en} className="field" required /></div>
               </div>
               <div className="flex flex-wrap items-end gap-4">
-                <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-bold uppercase text-gold-700">{n.type === "boolean" ? "Yes / No" : n.type === "count" ? "Count" : "Choice"}</span>
+                <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-bold uppercase text-gold-700">{n.type === "boolean" ? "Yes / No" : n.type === "count" ? "Count" : n.type === "multi" ? "Multiple choice" : "Choice"}</span>
                 {n.type === "boolean" && (
                   <div className="w-28"><label className="label" htmlFor={`n${n.id}_points`}>Points</label><input id={`n${n.id}_points`} name={`n${n.id}_points`} type="number" min={0} defaultValue={n.points} className="field" /></div>
                 )}
@@ -78,11 +78,12 @@ export function NiyamsForm({ niyams, options }: { niyams: NiyamRow[]; options: O
                   <div className="w-28"><label className="label" htmlFor={`n${n.id}_max`}>Max count</label><input id={`n${n.id}_max`} name={`n${n.id}_max`} type="number" min={1} defaultValue={n.max_count} className="field" /></div>
                 </>)}
                 {n.type === "choice" && <p className="pb-3 text-sm text-muted">Points are set per option below.</p>}
+                {n.type === "multi" && <p className="pb-3 text-sm text-muted">Points are set per option below. Students can tick more than one.</p>}
                 <label className="flex items-center gap-2 pb-3 text-sm"><input type="checkbox" name={`n${n.id}_active`} defaultChecked={n.active} className={tick} /> Active</label>
               </div>
             </div>
 
-            {n.type === "choice" && (
+            {(n.type === "choice" || n.type === "multi") && (
               <div className="mt-3 space-y-2 border-t border-gold-100 pt-3">
                 {options.filter((o) => o.niyam_id === n.id).map((o) => (
                   <div key={o.id} className="flex flex-wrap items-end gap-3 rounded-xl p-2">

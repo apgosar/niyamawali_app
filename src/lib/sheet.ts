@@ -15,7 +15,7 @@ export interface SheetRow {
   no: number;
   name: string;
   points: string; // "10", "20×", "30–60"
-  kind: "boolean" | "count" | "choice";
+  kind: "boolean" | "count" | "choice" | "multi";
 }
 
 export interface SheetData {
@@ -25,7 +25,7 @@ export interface SheetData {
   part: SheetPart;
   days: SheetDay[];
   rows: SheetRow[];
-  /** e.g. "B = Biyasana · E = Ekasana · A = Ayambil · U = Upvas" (empty when there is no choice niyam) */
+  /** e.g. "B = Biyasana · E = Ekasana · … · R = Rai · D = Devsi" (empty when there is no choice niyam) */
   choiceLegend: string;
   hasCount: boolean;
 }
@@ -50,23 +50,23 @@ export async function buildSheet(month: string, part: SheetPart, lang: Lang): Pr
   const rows: SheetRow[] = niyams.map((n) => {
     let points = String(n.points);
     if (n.type === "count") points = `${n.points_per_unit}×`;
-    if (n.type === "choice") {
+    if (n.type === "choice" || n.type === "multi") {
       const pts = options.filter((o) => o.niyam_id === n.id).map((o) => o.points);
-      points = pts.length ? `${Math.min(...pts)}–${Math.max(...pts)}` : "";
+      // multi-choice runs from the smallest single tick up to all of them together
+      const most = n.type === "multi" ? pts.reduce((s, x) => s + x, 0) : Math.max(...pts);
+      points = pts.length ? `${Math.min(...pts)}–${most}` : "";
     }
     return { no: n.sort_order, name: lang === "gu" ? n.name_gu : n.name_en, points, kind: n.type };
   });
 
-  const choice = niyams.find((n) => n.type === "choice");
-  const choiceLegend = choice
-    ? options
-        .filter((o) => o.niyam_id === choice.id)
-        .map((o) => {
-          const label = lang === "gu" ? o.label_gu : o.label_en;
-          return `${firstLetter(label)} = ${label}`;
-        })
-        .join(" · ")
-    : "";
+  const choiceLegend = niyams
+    .filter((n) => n.type === "choice" || n.type === "multi")
+    .flatMap((n) => options.filter((o) => o.niyam_id === n.id))
+    .map((o) => {
+      const label = lang === "gu" ? o.label_gu : o.label_en;
+      return `${firstLetter(label)} = ${label}`;
+    })
+    .join(" · ");
 
   return {
     lang, month, monthText: monthLabel(month, lang), part, days, rows, choiceLegend,

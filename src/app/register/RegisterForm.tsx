@@ -8,7 +8,7 @@ import { PhotoPicker } from "@/components/PhotoPicker";
 import { PinPad } from "@/components/PinPad";
 import { MultiSelect } from "@/components/MultiSelect";
 import { Combobox } from "@/components/Combobox";
-import { PREVIOUS_SHIBIRS, STANDARDS, standardLabel } from "@/lib/profile-options";
+import { NO_SHIBIR, PREVIOUS_SHIBIRS, STANDARDS, pickShibirs, standardLabel } from "@/lib/profile-options";
 
 type Errors = Record<string, string>;
 interface Props {
@@ -22,7 +22,7 @@ interface Props {
 const STEP_FIELDS: string[][] = [
   ["photo", "first_name", "surname", "gender", "dob", "village"],
   ["father_name", "father_phone", "mother_name", "mother_phone", "own_phone", "parent"],
-  ["residence", "sangh", "standard", "dharmik_abhyas", "pathshala", "pathshala_name"],
+  ["residence", "sangh", "standard", "dharmik_abhyas", "pathshala", "pathshala_name", "previous_shibirs"],
   ["pin"],
 ];
 const TOTAL = STEP_FIELDS.length;
@@ -92,6 +92,7 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
       req("residence"); req("sangh"); req("dharmik_abhyas"); req("standard");
       if (!v.pathshala) e.pathshala = "required";
       if (v.pathshala === "yes") req("pathshala_name");
+      if (!shibirs.length) e.previous_shibirs = "required";
     }
     return e;
   }
@@ -246,9 +247,10 @@ export function RegisterForm({ refCode, badRef, referrerName, bonus, suggestions
             {v.pathshala === "yes" && (
               <Field k="pathshala_name" error={msg(errors.pathshala_name)} label={`${r.pathshalaWhich} *`} hint={r.pathshalaHint}>{text("pathshala_name")}</Field>
             )}
-            <Field k="previous_shibirs" label={r.previousShibir} hint={r.previousHint}>
-              <MultiSelect id="previous_shibirs" options={PREVIOUS_SHIBIRS.map((s) => ({ value: s.code, label: s.label }))}
-                value={shibirs} onChange={setShibirs} placeholder={r.selectPlaceholder} />
+            <Field k="previous_shibirs" label={`${r.previousShibir} *`} error={msg(errors.previous_shibirs)} hint={r.previousHint}>
+              <MultiSelect id="previous_shibirs" invalid={!!errors.previous_shibirs}
+                options={[...PREVIOUS_SHIBIRS.map((s) => ({ value: s.code as string, label: s.label as string })), { value: NO_SHIBIR, label: r.noneOfAbove }]}
+                value={shibirs} onChange={(next) => setShibirs((before) => pickShibirs(before, next))} placeholder={r.selectPlaceholder} />
             </Field>
           </>
         )}

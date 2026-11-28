@@ -18,7 +18,7 @@ const DEFAULTS: Record<string, string> = {
   edit_window_days: "3",
   referral_bonus: "100",
   referral_unlock_days: "3",
-  streak_bonuses: "7:50,21:100,51:200,108:500",
+  streak_bonuses: "7:50,21:100,54:200,108:500",
   grant_default_days: "15",
   grant_default_hours: "24",
 };

@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { query } from "../db";
 import { searchStudents } from "../grants";
 import { parseDetails, parseIdentity } from "../validation";
-import { standardLabel, ordinal, parseShibirs, shibirLabels, STANDARDS, PREVIOUS_SHIBIRS } from "../profile-options";
+import { standardLabel, ordinal, parseShibirs, pickShibirs, shibirLabels, shibirSelection, STANDARDS, PREVIOUS_SHIBIRS } from "../profile-options";
 import { studentCodeSql } from "../student-code";
 
 const base = (extra: Record<string, string | string[]> = {}) => {
   const fd = new FormData();
   const all: Record<string, string | string[]> = {
     village: "Palitana", mother_name: "Meena", mother_phone: "9820011111", residence: "Borivali", sangh: "Sangh",
-    dharmik_abhyas: "2 Pratikraman", pathshala: "no", standard: "8", ...extra,
+    dharmik_abhyas: "2 Pratikraman", pathshala: "no", standard: "8", previous_shibirs: "none", ...extra,
   };
   for (const [k, v] of Object.entries(all)) (Array.isArray(v) ? v : [v]).forEach((x) => fd.append(k, x));
   return fd;
@@ -81,12 +81,43 @@ describe("registration field parsing", () => {
     for (const n of [1, 9, 15]) { e = {}; expect(parseDetails(base({ standard: String(n) }), e, { requireStandard: true }).standard).toBe(n); expect(e.standard).toBeUndefined(); }
   });
 
-  it("previous shibirs: any combination, none allowed, unknown values dropped, stable order", () => {
+  it("previous shibirs: any combination, unknown values dropped, stable order", () => {
     const e: Record<string, string> = {};
-    expect(parseDetails(base({ previous_shibirs: [] }), e).previous_shibirs).toBe("");
     expect(parseDetails(base({ previous_shibirs: ["kutch-pundi", "jogeshwari"] }), e).previous_shibirs).toBe("jogeshwari,kutch-pundi");
     expect(parseDetails(base({ previous_shibirs: ["deolali", "deolali", "bogus"] }), e).previous_shibirs).toBe("deolali");
     expect(Object.keys(e)).toEqual([]);
+  });
+
+  it("previous shibirs: an answer is required, and “None of the above” is one", () => {
+    for (const bad of [[], ["bogus"]]) {
+      const e: Record<string, string> = {};
+      parseDetails(base({ previous_shibirs: bad }), e);
+      expect(e.previous_shibirs).toBe("required");
+    }
+    const e: Record<string, string> = {};
+    expect(parseDetails(base({ previous_shibirs: ["none"] }), e).previous_shibirs).toBe("none");
+    expect(parseDetails(base({ previous_shibirs: ["none", "deolali"] }), e).previous_shibirs).toBe("deolali");
+    expect(Object.keys(e)).toEqual([]);
+  });
+
+  it("previous shibirs: a saved answer cannot be changed", () => {
+    for (const sent of [[], ["deolali"], ["bogus"]]) {
+      const e: Record<string, string> = {};
+      expect(parseDetails(base({ previous_shibirs: sent }), e, { savedShibirs: "none" }).previous_shibirs).toBe("none");
+      expect(e).toEqual({});
+    }
+    // nothing saved yet: the answer sent is taken
+    expect(parseDetails(base({ previous_shibirs: ["deolali"] }), {}, { savedShibirs: "" }).previous_shibirs).toBe("deolali");
+  });
+
+  it("“None of the above” and the Shibirs exclude each other in the dropdown", () => {
+    expect(pickShibirs(["deolali"], ["deolali", "none"])).toEqual(["none"]);
+    expect(pickShibirs(["none"], ["none", "deolali"])).toEqual(["deolali"]);
+    expect(pickShibirs(["none"], [])).toEqual([]);
+    expect(pickShibirs(["deolali"], ["deolali", "jogeshwari"])).toEqual(["deolali", "jogeshwari"]);
+    expect(shibirSelection("none")).toEqual(["none"]);
+    expect(shibirSelection("deolali")).toEqual(["deolali"]);
+    expect(shibirLabels("none")).toEqual(["None of the above"]);
   });
 });
 

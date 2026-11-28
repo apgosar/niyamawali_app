@@ -28,7 +28,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad_value" }, { status: 400 });
   }
   try {
-    const result = await saveEntry(student.id, b.date, niyamId, value);
+    // optional Sutra / Gatha number (gatha entries); left as saved when the request does not mention them
+    const text = (v: unknown) => (typeof v === "string" ? v : "");
+    const details = typeof b.sutra === "string" || typeof b.gatha_no === "string" ? { sutra: text(b.sutra), gatha_no: text(b.gatha_no) } : undefined;
+    const result = await saveEntry(student.id, b.date, niyamId, value, details);
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
     if (e instanceof LogError) {

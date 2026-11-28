@@ -18,8 +18,9 @@ const Row = ({ k, v }: { k: string; v: React.ReactNode }) => (
   <div className="flex justify-between gap-4 py-2 text-sm"><dt className="text-muted">{k}</dt><dd className="text-right font-medium">{v || "—"}</dd></div>
 );
 
-export default async function StudentDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function StudentDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params;
+  const { saved } = await searchParams;
   const data = await getStudentDetail(id);
   if (!data) notFound();
   const { s, months, badges, referrals, bonuses, recent, submitted } = data;
@@ -33,8 +34,12 @@ export default async function StudentDetail({ params }: { params: Promise<{ id: 
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/admin/students" className="text-sm font-semibold text-gold-600">← All students</Link>
-        <Link href={`/admin/students/${id}/entries`} className="btn btn-gold min-h-10 px-4 py-2">📅 Daily entries (date by date)</Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/admin/students/${id}/edit`} className="btn btn-ghost min-h-10 px-4 py-2">✎ Edit profile</Link>
+          <Link href={`/admin/students/${id}/entries`} className="btn btn-gold min-h-10 px-4 py-2">📅 Daily entries (date by date)</Link>
+        </div>
       </div>
+      {saved && <p role="status" className="rounded-lg bg-sage-50 p-3 text-sm font-semibold text-sage-700">Profile saved ✓</p>}
 
       <section className="card flex flex-wrap items-center gap-4 p-4">
         <Avatar photoKey={String(s.photo_key)} name={name} size={88} />
@@ -85,7 +90,7 @@ export default async function StudentDetail({ params }: { params: Promise<{ id: 
             <Row k="Gender" v={s.gender === "M" ? "Male (M)" : s.gender === "F" ? "Female (F)" : null} />
             <Row k="Current standard" v={s.standard ? `${ordinal(Number(s.standard))} standard` : null} />
             <Row k="Dharmik abhyas" v={s.dharmik_abhyas} />
-            <Row k="Previous shibirs" v={shibirLabels(String(s.previous_shibirs ?? "")).join(", ") || "None"} />
+            <Row k="Previous shibirs" v={shibirLabels(String(s.previous_shibirs ?? "")).join(", ")} />
             <Row k="Pathshala" v={s.pathshala ? `Yes – ${s.pathshala_name}` : "No"} />
             <Row k="Referred by" v={s.referred_by_name} />
             <Row k="Joined" v={String(s.created_at).slice(0, 10)} />

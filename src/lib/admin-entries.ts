@@ -1,6 +1,7 @@
 import "server-only";
 import { query } from "./db";
 import { daysInMonth, addDays, monthRange, weekday } from "./dates";
+import { pickedOptions, type OptionDef } from "./points";
 
 /** timestamptz → "2026-11-21T05:55:12Z" (parses the same in every browser) */
 const iso = (col: string) => `to_char(${col} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')`;
@@ -9,10 +10,13 @@ export interface EntryCell {
   value: number;
   points: number;
   updated_at: string;
-  /** short text for the grid: ✓, the gatha count, or the first letter of the choice */
+  /** short text for the grid: ✓, the gatha count, or the first letter(s) of the choice(s) */
   short: string;
-  /** full text: "Done", "3 gathas", "Ayambil" */
+  /** full text: "Done", "3 gathas", "Ayambil", "Rai + Devsi" */
   full: string;
+  /** optional details a student added to a gatha entry */
+  sutra: string | null;
+  gatha_no: string | null;
 }
 
 export interface MonthEntries {
@@ -40,11 +44,12 @@ export async function getMonthEntries(studentId: string, month: string): Promise
   const niyamRows = await query<{ id: number; sort_order: number; name_en: string; name_gu: string; type: string; active: boolean }>(
     "select id, sort_order, name_en, name_gu, type, active from niyams order by sort_order, id",
   );
-  const options = new Map(
-    (await query<{ id: number; label_en: string }>("select id, label_en from niyam_options")).map((o) => [o.id, o.label_en]),
+  const optionRows = await query<OptionDef>(
+    "select id, niyam_id, code, label_gu, label_en, points, sort_order from niyam_options order by niyam_id, sort_order, id",
   );
-  const logs = await query<{ niyam_id: number; d: string; value: number; points: number; updated_at: string }>(
-    `select niyam_id, log_date::text as d, value, points, ${iso("updated_at")} as updated_at
+  const options = new Map(optionRows.map((o) => [o.id, o.label_en]));
+  const logs = await query<{ niyam_id: number; d: string; value: number; points: number; sutra: string | null; gatha_no: string | null; updated_at: string }>(
+    `select niyam_id, log_date::text as d, value, points, sutra, gatha_no, ${iso("updated_at")} as updated_at
        from daily_logs where student_id = $1 and log_date >= $2 and log_date < $3`,
     [studentId, from, to],
   );
@@ -67,9 +72,21 @@ export async function getMonthEntries(studentId: string, month: string): Promise
 
   for (const l of logs) {
     const type = typeOf.get(l.niyam_id);
-    const short = type === "count" ? String(l.value) : type === "choice" ? (options.get(l.value) ?? "?").charAt(0).toUpperCase() : "✓";
-    const full = type === "count" ? `${l.value} ${l.value === 1 ? "gatha" : "gathas"}` : type === "choice" ? (options.get(l.value) ?? "?") : "Done";
-    cells[`${l.niyam_id}:${l.d}`] = { value: l.value, points: l.points, updated_at: l.updated_at, short, full };
+    const initial = (label: string) => label.charAt(0).toUpperCase();
+    let short = "✓";
+    let full = "Done";
+    if (type === "count") {
+      short = String(l.value);
+      full = `${l.value} ${l.value === 1 ? "gatha" : "gathas"}`;
+    } else if (type === "choice") {
+      full = options.get(l.value) ?? "?";
+      short = initial(full);
+    } else if (type === "multi") {
+      const labels = pickedOptions(l.niyam_id, l.value, optionRows).map((o) => o.label_en);
+      full = labels.join(" + ") || "?";
+      short = labels.map(initial).join("") || "?";
+    }
+    cells[`${l.niyam_id}:${l.d}`] = { value: l.value, points: l.points, updated_at: l.updated_at, short, full, sutra: l.sutra, gatha_no: l.gatha_no };
     const d = (daily[l.d] ??= { points: 0, count: 0, submitted_at: subMap.get(l.d) ?? null, last_update: null });
     d.points += l.points;
     d.count += 1;

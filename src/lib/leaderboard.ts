@@ -13,7 +13,10 @@ export interface LeaderRow {
   rank: number;
 }
 
-/** Ranking for one month (logs + bonuses). Ties share a rank. */
+/**
+ * Ranking for one month (logs + bonuses), for admins only. Ties share a rank.
+ * Only students who have attended a previous Divine Sanskar Shibir are ranked.
+ */
 export async function monthlyLeaderboard(month: string, limit = 100): Promise<LeaderRow[]> {
   const [from, to] = monthRange(month);
   return query<LeaderRow>(
@@ -27,16 +30,11 @@ export async function monthlyLeaderboard(month: string, limit = 100): Promise<Le
         select s.id, s.student_code, s.first_name, s.surname, s.photo_key, s.sangh, pts.points,
                rank() over (order by pts.points desc)::int as rank
           from pts join students s on s.id = pts.student_id
-         where s.active and pts.points > 0
+         where s.active and pts.points > 0 and s.previous_shibirs not in ('', 'none')
      )
      select * from ranked order by rank, first_name limit $3`,
     [from, to, limit],
   );
-}
-
-export async function studentRank(month: string, studentId: string): Promise<LeaderRow | null> {
-  const all = await monthlyLeaderboard(month, 100000);
-  return all.find((r) => r.id === studentId) ?? null;
 }
 
 /** Awards the "Top 10" badge to the finishers of a closed month (idempotent). */

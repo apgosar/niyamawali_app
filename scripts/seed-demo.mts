@@ -27,7 +27,7 @@ const today = todayIST();
 const niyams = await query<{ id: number; type: string; points: number; points_per_unit: number }>(
   "select id, type, points, points_per_unit from niyams where active",
 );
-const options = await query<{ id: number; points: number }>("select id, points from niyam_options");
+const options = await query<{ id: number; niyam_id: number; points: number; sort_order: number }>("select id, niyam_id, points, sort_order from niyam_options");
 
 const photoDir = path.join(process.cwd(), ".data", "photos", "students");
 fs.mkdirSync(photoDir, { recursive: true });
@@ -44,12 +44,12 @@ for (let i = 0; i < 40; i++) {
   const code = `DEMO${String(i).padStart(2, "0")}`;
   const [{ id }] = await query<{ id: string }>(
     `insert into students (first_name, surname, photo_key, dob, village, father_name, father_phone, residence, sangh,
-        dharmik_abhyas, pathshala, pathshala_name, pin_hash, referral_code, created_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, now() - ($15 || ' days')::interval)
+        dharmik_abhyas, pathshala, pathshala_name, pin_hash, referral_code, created_at, previous_shibirs)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, now() - ($15 || ' days')::interval, $16)
      on conflict (referral_code) do nothing returning id`,
     [fn, sn, key, `${2006 + rnd(9)}-0${1 + rnd(9)}-1${rnd(9)}`, pick(village), `${sn} Father`, `98${String(20000000 + i * 137).padStart(8, "0")}`,
      pick(residence), pick(sangh), pick(["2 Pratikraman", "Aryarakshit 2nd Dhoran", "Sutra 1"]), i % 3 !== 0, i % 3 !== 0 ? "Aryarakshit" : null,
-     hash, code, String(rnd(120))],
+     hash, code, String(rnd(120)), i % 5 === 0 ? "none" : pick(["jogeshwari", "deolali", "kutch-don", "deolali,kutch-pundi"])],
   );
   if (!id) continue;
 
@@ -61,7 +61,9 @@ for (let i = 0; i < 40; i++) {
       if (Math.random() > engagement) continue;
       let value = 1, points = n.points;
       if (n.type === "count") { value = 1 + rnd(3); points = value * n.points_per_unit; }
-      if (n.type === "choice") { const o = pick(options); value = o.id; points = o.points; }
+      const own = options.filter((o) => o.niyam_id === n.id);
+      if (n.type === "choice") { const o = pick(own); value = o.id; points = o.points; }
+      if (n.type === "multi") { const o = pick(own); value = 1 << (o.sort_order - 1); points = o.points; }
       await query(
         `insert into daily_logs (student_id, log_date, niyam_id, value, points) values ($1,$2,$3,$4,$5) on conflict do nothing`,
         [id, date, n.id, value, points],

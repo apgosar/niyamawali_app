@@ -14,8 +14,10 @@ import { todayIST, fmtIST } from "@/lib/dates";
 import { DONOR_LINES, joinLines } from "@/lib/donor";
 import { grantEdit, revokeGrant } from "@/lib/grants";
 import { addNiyamRow, EditError, saveNiyamEdits, type NiyamEdit, type OptionEdit } from "@/lib/niyams-admin";
+import { updateStudentByAdmin } from "@/lib/student-admin";
 
 export interface ActionState { error?: string; ok?: string; pin?: string }
+export interface ProfileState { errors: Record<string, string> }
 
 const s = (fd: FormData, k: string, max = 300) => String(fd.get(k) ?? "").trim().slice(0, max);
 const int = (fd: FormData, k: string, fallback = 0) => {
@@ -61,6 +63,22 @@ export async function resetStudentPin(_prev: ActionState | null, fd: FormData): 
   if (!rows.length) return { error: "Student not found." };
   revalidatePath(`/admin/students/${id}`);
   return { ok: "Temporary PIN set. Share it with the family — they will be asked to choose a new one.", pin };
+}
+
+/** Saves the admin's changes to a student's profile, then returns to the student's page. */
+export async function saveStudentProfile(_prev: ProfileState | null, fd: FormData): Promise<ProfileState> {
+  await requireAdmin();
+  const id = s(fd, "id", 40);
+  let result;
+  try {
+    result = await updateStudentByAdmin(id, fd);
+  } catch (e) {
+    console.error("saveStudentProfile failed", e);
+    return { errors: { form: "server" } };
+  }
+  if (!result.ok) return { errors: result.errors };
+  revalidatePath(`/admin/students/${id}`);
+  redirect(`/admin/students/${id}?saved=1`);
 }
 
 export async function toggleStudentActive(fd: FormData) {

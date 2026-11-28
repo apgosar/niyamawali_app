@@ -1,4 +1,4 @@
-export type NiyamType = "boolean" | "choice" | "count";
+export type NiyamType = "boolean" | "choice" | "count" | "multi";
 
 export interface NiyamDef {
   id: number;
@@ -21,11 +21,19 @@ export interface OptionDef {
   sort_order: number;
 }
 
+/** A multi-choice entry stores the ticked options as bits: option 1 → 1, option 2 → 2, option 3 → 4 … */
+export const optionBit = (o: { sort_order: number }) => 1 << (o.sort_order - 1);
+
+/** The options ticked in a multi-choice entry. */
+export const pickedOptions = (niyamId: number, value: number, options: OptionDef[]) =>
+  options.filter((o) => o.niyam_id === niyamId && (value & optionBit(o)) !== 0);
+
 /**
  * Points for one niyam entry, or null when the value is not valid for that niyam.
  *  boolean → `points` when value is 1
  *  choice  → points of the chosen option (value = option id)
  *  count   → value × points_per_unit (value must be 1..max_count)
+ *  multi   → sum of the ticked options (value = their bits added together)
  */
 export function scoreEntry(niyam: NiyamDef, value: number, options: OptionDef[]): number | null {
   if (!Number.isInteger(value)) return null;
@@ -39,5 +47,11 @@ export function scoreEntry(niyam: NiyamDef, value: number, options: OptionDef[])
     case "count":
       if (value < 1 || value > niyam.max_count) return null;
       return value * niyam.points_per_unit;
+    case "multi": {
+      const picked = pickedOptions(niyam.id, value, options);
+      // every bit must belong to an option of this niyam
+      if (value < 1 || picked.reduce((bits, o) => bits | optionBit(o), 0) !== value) return null;
+      return picked.reduce((sum, o) => sum + o.points, 0);
+    }
   }
 }

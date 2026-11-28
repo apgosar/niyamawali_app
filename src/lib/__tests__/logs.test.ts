@@ -12,8 +12,8 @@ let ids: Record<string, number> = {};
 async function mkStudent(name: string, code: string, referredBy?: string): Promise<string> {
   const [{ id }] = await query<{ id: string }>(
     `insert into students (first_name, surname, photo_key, dob, village, father_name, father_phone, residence, sangh,
-        dharmik_abhyas, pathshala, pin_hash, referral_code, referred_by)
-     values ($1,'Test','students/x.jpg','2012-01-01','V','F','9820000001','R','S','A',false,'x',$2,$3) returning id`,
+        dharmik_abhyas, pathshala, pin_hash, referral_code, referred_by, previous_shibirs)
+     values ($1,'Test','students/x.jpg','2012-01-01','V','F','9820000001','R','S','A',false,'x',$2,$3,'deolali') returning id`,
     [name, code, referredBy ?? null],
   );
   if (referredBy) await query("insert into referrals (referee_id, referrer_id) values ($1,$2)", [id, referredBy]);

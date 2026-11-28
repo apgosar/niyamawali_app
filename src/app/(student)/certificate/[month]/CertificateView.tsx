@@ -5,7 +5,7 @@ import { usePreparedPng } from "@/lib/render";
 import { downloadBlob, shareImage } from "@/lib/share";
 
 interface Props {
-  name: string; photoKey: string; monthText: string; points: number; rank: number; total: number;
+  name: string; photoKey: string; monthText: string; points: number;
   donor: string | null; fileName: string;
 }
 
@@ -58,9 +58,9 @@ export function CertificateView(p: Props) {
             {gu ? `${p.monthText} માં દૈનિક નિયમ સાધના માટે` : `for daily niyam sadhana in ${p.monthText}`}
           </p>
 
-          <div className="mt-1.5 flex items-end gap-6">
-            <div><p className="num text-4xl leading-none text-gold-600">{p.points}</p><p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t.common.points}</p></div>
-            <div><p className="num text-4xl leading-none text-lotus-600">#{p.rank}</p><p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t.common.rank} / {p.total}</p></div>
+          <div className="mt-2">
+            <p className="num text-5xl leading-none text-gold-600">{p.points}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t.common.points}</p>
           </div>
 
           {p.donor ? (

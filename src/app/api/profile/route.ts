@@ -17,7 +17,7 @@ export async function GET() {
   return NextResponse.json(d);
 }
 
-/** Students can update their contact / dharmik details and photo (not name, DOB or PIN). */
+/** Students can update their contact / dharmik details and photo (not name, DOB, PIN or a saved previous-Shibir answer). */
 export async function POST(req: Request) {
   const s = await getStudent();
   if (!s) return NextResponse.json({ error: "auth" }, { status: 401 });
@@ -25,7 +25,8 @@ export async function POST(req: Request) {
   if (!fd) return NextResponse.json({ error: "bad" }, { status: 400 });
 
   const errors: FieldErrors = {};
-  const d = parseDetails(fd, errors);
+  const saved = await one<{ previous_shibirs: string }>("select previous_shibirs from students where id = $1", [s.id]);
+  const d = parseDetails(fd, errors, { savedShibirs: saved?.previous_shibirs });
   const g = String(fd.get("gender") ?? "").toUpperCase();
   const gender = g === "M" || g === "F" ? g : null;
   if (Object.keys(errors).length) return NextResponse.json({ errors }, { status: 422 });
@@ -46,7 +47,8 @@ export async function POST(req: Request) {
   await query(
     `update students set village=$2, father_name=$3, father_phone=$4, mother_name=$5, mother_phone=$6, own_phone=$7,
             residence=$8, sangh=$9, dharmik_abhyas=$10, pathshala=$11, pathshala_name=$12,
-            photo_key = coalesce($13, photo_key), standard = $14, previous_shibirs = $15,
+            photo_key = coalesce($13, photo_key), standard = $14,
+            previous_shibirs = case when previous_shibirs = '' then $15 else previous_shibirs end,  -- filled in once
             gender = coalesce(gender, $16)  -- gender can be filled in once (never changed), so the Student ID stays correct
       where id = $1`,
     [s.id, village, d.father_name, d.father_phone, d.mother_name, d.mother_phone, d.own_phone, d.residence,

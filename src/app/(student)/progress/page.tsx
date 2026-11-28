@@ -5,7 +5,6 @@ import { addMonths, daysInMonth, monthLabel, monthOf, monthRange, todayIST, week
 import { getBadges, getMonthDays, getMonthlyTotals } from "@/lib/logs";
 import { getSettings } from "@/lib/settings";
 import { BadgeGrid } from "./BadgeGrid";
-import { studentRank } from "@/lib/leaderboard";
 
 export const metadata = { title: "Progress" };
 
@@ -40,7 +39,6 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
   };
 
   const nav = "flex h-10 w-10 items-center justify-center rounded-full border border-gold-300 bg-ivory text-xl text-gold-700";
-  const rank = month < current ? await studentRank(month, student.id) : null;
 
   return (
     <>
@@ -109,8 +107,6 @@ export default async function ProgressPage({ searchParams }: { searchParams: Pro
             {monthly.length === 0 && <li className="py-3 text-center text-sm text-muted">{t.progress.noData}</li>}
           </ul>
         </section>
-        {rank && <p className="text-center text-sm text-muted">{monthLabel(month, lang)} · {t.common.rank} #{rank.rank}</p>}
-
         {/* badges are for all time, not just the month shown above; the Rules tab links here */}
         <section id="badges" className="card scroll-mt-[calc(var(--sat)+1rem)] p-4">
           <h2 className="text-lg font-bold text-gold-700">{t.profile.badges}</h2>

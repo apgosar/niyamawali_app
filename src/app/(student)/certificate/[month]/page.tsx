@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { requireStudent } from "@/lib/auth";
 import { getT } from "@/lib/lang";
 import { isValidMonth, monthLabel, monthOf, todayIST } from "@/lib/dates";
-import { currentDonor, monthlyLeaderboard } from "@/lib/leaderboard";
+import { currentDonor } from "@/lib/leaderboard";
+import { getMonthTotal } from "@/lib/logs";
 import { donorLines } from "@/lib/donor";
 import { CertificateView } from "./CertificateView";
 
@@ -16,22 +17,19 @@ export default async function CertificatePage({ params }: { params: Promise<{ mo
   if (!isValidMonth(month)) notFound();
   const closed = month < monthOf(todayIST());
 
-  const [rows, donor] = closed ? await Promise.all([monthlyLeaderboard(month, 100000), currentDonor()]) : [[], null];
-  const mine = rows.find((r) => r.id === student.id);
+  const [points, donor] = closed ? await Promise.all([getMonthTotal(student.id, month), currentDonor()]) : [0, null];
 
   return (
     <main className="safe-top px-4 pb-6 pt-5">
       <Link href="/progress" className="text-sm font-semibold text-gold-600">← {t.common.back}</Link>
-      {!closed || !mine ? (
+      {!closed || points <= 0 ? (
         <p className="card mt-6 p-8 text-center text-muted">{closed ? t.progress.noData : t.progress.certificateHint}</p>
       ) : (
         <CertificateView
           name={`${student.first_name} ${student.surname}`}
           photoKey={student.photo_key}
           monthText={monthLabel(month, lang)}
-          points={mine.points}
-          rank={mine.rank}
-          total={rows.length}
+          points={points}
           donor={donor ? donorLines(donor, lang).join("\n") : null}
           fileName={`niyamawali-${month}-${student.first_name}`}
         />

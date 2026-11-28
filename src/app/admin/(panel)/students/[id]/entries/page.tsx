@@ -10,6 +10,10 @@ export const metadata = { title: "Daily entries" };
 
 const DOW = ["S", "M", "T", "W", "T", "F", "S"];
 
+/** "Sutra: Logassa · Gatha no: 5-7" (empty when the student added neither) */
+const gathaText = (c: { sutra: string | null; gatha_no: string | null }) =>
+  [c.sutra && `Sutra: ${c.sutra}`, c.gatha_no && `Gatha no: ${c.gatha_no}`].filter(Boolean).join(" · ");
+
 export default async function StudentEntriesPage({
   params, searchParams,
 }: { params: Promise<{ id: string }>; searchParams: Promise<{ month?: string }> }) {
@@ -65,7 +69,7 @@ export default async function StudentEntriesPage({
           <h2 className="text-lg font-bold text-gold-700">{monthLabel(month, "en")} — what was entered</h2>
           <a href={`/admin/students/${id}/entries/export?month=${month}`} className="btn btn-ghost min-h-9 px-3 py-1.5 text-sm">⬇ Export CSV</a>
         </div>
-        <p className="mb-2 text-xs text-muted">✓ = done · number = gathas · letter = choice (B Biyasana, E Ekasana, A Ayambil, U Upvas) · 🔒 = day submitted · hover a cell for the time it was last changed.</p>
+        <p className="mb-2 text-xs text-muted">✓ = done · number = gathas · letter = choice (B Biyasana, E Ekasana, A Ayambil, U Upvas; R Rai, D Devsi) · 🔒 = day submitted · hover a cell for the details and the time it was last changed.</p>
         <div className="overflow-x-auto rounded-xl border border-gold-100">
           <table className="w-full border-collapse text-xs">
             <thead>
@@ -90,7 +94,7 @@ export default async function StudentEntriesPage({
                   {e.days.map((d) => {
                     const c = e.cells[`${n.id}:${d.date}`];
                     return (
-                      <td key={d.date} title={c ? `${c.full} · ${c.points} pts · changed ${fmtIST(c.updated_at)}` : ""}
+                      <td key={d.date} title={c ? [c.full, gathaText(c), `${c.points} pts`, `changed ${fmtIST(c.updated_at)}`].filter(Boolean).join(" · ") : ""}
                         className={`p-0 text-center ${c ? "bg-sage-50 font-bold text-sage-700" : d.dow === 0 ? "bg-gold-50" : ""}`}>
                         {c?.short ?? ""}
                       </td>
@@ -133,7 +137,7 @@ export default async function StudentEntriesPage({
                         <tbody className="divide-y divide-gold-100">
                           {rows.map((n) => {
                             const c = e.cells[`${n.id}:${date}`];
-                            return <tr key={n.id}><td className="num py-1 text-muted">{n.no}</td><td>{n.name_en}</td><td className="font-semibold text-sage-700">{c.full}</td><td className="num text-right">{c.points}</td><td className="text-right text-xs text-muted">{fmtIST(c.updated_at)}</td></tr>;
+                            return <tr key={n.id}><td className="num py-1 text-muted">{n.no}</td><td>{n.name_en}</td><td className="font-semibold text-sage-700">{c.full}{gathaText(c) && <span className="block text-xs font-normal text-muted">{gathaText(c)}</span>}</td><td className="num text-right">{c.points}</td><td className="text-right text-xs text-muted">{fmtIST(c.updated_at)}</td></tr>;
                           })}
                           {rows.length === 0 && <tr><td colSpan={5} className="py-2 text-muted">No niyams left ticked on this day.</td></tr>}
                         </tbody>

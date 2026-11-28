@@ -10,6 +10,7 @@ export const BADGES: BadgeDef[] = [
   { code: "perfect_day", icon: "🌟", name: { en: "Perfect Day", gu: "સંપૂર્ણ દિવસ" }, desc: { en: "Completed every Yes/No niyam in a day", gu: "એક દિવસમાં બધા હા/ના નિયમ પાળ્યા" } },
   { code: "streak_7", icon: "🪔", name: { en: "7-Day Streak", gu: "૭ દિવસ સળંગ" }, desc: { en: "Logged 7 days in a row", gu: "સળંગ ૭ દિવસ નોંધ્યા" } },
   { code: "streak_21", icon: "🔥", name: { en: "21-Day Streak", gu: "૨૧ દિવસ સળંગ" }, desc: { en: "Logged 21 days in a row", gu: "સળંગ ૨૧ દિવસ નોંધ્યા" } },
+  { code: "streak_54", icon: "🌸", name: { en: "54-Day Streak", gu: "૫૪ દિવસ સળંગ" }, desc: { en: "Logged 54 days in a row", gu: "સળંગ ૫૪ દિવસ નોંધ્યા" } },
   { code: "streak_108", icon: "🏵️", name: { en: "108-Day Streak", gu: "૧૦૮ દિવસ સળંગ" }, desc: { en: "Logged 108 days in a row", gu: "સળંગ ૧૦૮ દિવસ નોંધ્યા" } },
   { code: "tapasvi", icon: "🙏", name: { en: "Tapasvi", gu: "તપસ્વી" }, desc: { en: "10 Ayambil or Upvas", gu: "૧૦ આયંબિલ અથવા ઉપવાસ" } },
   { code: "gyani", icon: "📖", name: { en: "Gyani", gu: "જ્ઞાની" }, desc: { en: "Learned 25 gathas", gu: "૨૫ ગાથા કરી" } },

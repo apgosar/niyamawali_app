@@ -1,6 +1,6 @@
 import { ageOn, isValidYmd, todayIST } from "./dates";
 import { normalizePhone } from "./auth";
-import { GENDERS, PREVIOUS_SHIBIRS, STANDARDS, type Gender } from "./profile-options";
+import { GENDERS, NO_SHIBIR, PREVIOUS_SHIBIRS, STANDARDS, type Gender } from "./profile-options";
 
 export type FieldErrors = Record<string, string>;
 
@@ -17,14 +17,14 @@ export interface StudentDetails {
   pathshala: boolean;
   pathshala_name: string | null;
   standard: number | null;
-  /** comma-separated codes, "" = none */
+  /** comma-separated codes, or "none" for "None of the above" */
   previous_shibirs: string;
 }
 
 const str = (v: FormDataEntryValue | null, max = 150) => (typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "");
 
 /** Validates the "details" part shared by registration and profile edit. */
-export function parseDetails(fd: FormData, errors: FieldErrors, opts: { requireStandard?: boolean } = {}): StudentDetails {
+export function parseDetails(fd: FormData, errors: FieldErrors, opts: { requireStandard?: boolean; savedShibirs?: string } = {}): StudentDetails {
   const village = str(fd.get("village"));
   const residence = str(fd.get("residence"));
   const sangh = str(fd.get("sangh"));
@@ -68,9 +68,12 @@ export function parseDetails(fd: FormData, errors: FieldErrors, opts: { requireS
     else errors.standard = "required";
   } else if (opts.requireStandard) errors.standard = "required";
 
-  // previously attended shibirs: any number of the known options (none is fine)
+  // previously attended shibirs: any number of the known options, or "None of the above" – one answer is required.
+  // It decides who is ranked, so a saved answer is final: whatever is sent afterwards is ignored.
   const picked = new Set(fd.getAll("previous_shibirs").map((x) => String(x)));
-  const previous_shibirs = PREVIOUS_SHIBIRS.map((s) => s.code).filter((c) => picked.has(c)).join(",");
+  const attended = PREVIOUS_SHIBIRS.map((s) => s.code).filter((c) => picked.has(c)).join(",");
+  const previous_shibirs = opts.savedShibirs || attended || (picked.has(NO_SHIBIR) ? NO_SHIBIR : "");
+  if (!previous_shibirs) errors.previous_shibirs = "required";
 
   return {
     village,
